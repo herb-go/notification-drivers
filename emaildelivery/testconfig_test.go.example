@@ -1,0 +1,20 @@
+package emaildelivery
+
+var TestHost = ""
+
+var TestPort = 587
+
+var TestIdentity = ""
+
+var TestFrom = ""
+
+var TestSender = ""
+
+var TestUsername = ""
+
+var TestPassword = ""
+
+var TestTo=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
+var TestReplyTO=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
+var TestCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
+var TestBCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)

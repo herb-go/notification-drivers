@@ -5,5 +5,5 @@ var TestAgentID = 1000001
 var TestSecret = "secret"
 var TestRecipient = "userid"
 var TestPictureURL = "https://mat1.gtimg.com/pingjs/ext2020/qqindex2018/dist/img/qq_logo_2x.png"
-var TestMp3File = "/home/jarlyyn/下载/8182.mp3"
+var TestAmrFile = ""
 var TestMp4File = ""

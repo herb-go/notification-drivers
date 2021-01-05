@@ -19,6 +19,8 @@ func NewTestDelivery() *Delivery {
 	return d
 }
 
+var _ notification.DeliveryServer = &Delivery{}
+
 func TestTestMessage(t *testing.T) {
 	d := NewTestDelivery()
 	c := notification.NewContent()

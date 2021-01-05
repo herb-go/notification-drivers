@@ -8,13 +8,9 @@ import (
 )
 
 type Delivery struct {
-	ID    string
 	Agent wechatwork.Agent
 }
 
-func (d *Delivery) DeliveryID() string {
-	return d.ID
-}
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
