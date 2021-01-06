@@ -14,5 +14,7 @@ var ContentNameDescription = "description"
 var ContentNameURL = "url"
 var ContentNamePicURL = "picurl"
 var ContentNameNews = "news"
+var ContentNameMPNews = "mpnews"
+var ContentNameBtntxt = "btntxt"
 
 var RequeiredContent = []string{ContentNameMsgType}

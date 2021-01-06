@@ -34,8 +34,8 @@ func TestDelivery(t *testing.T) {
 	c.Set(ContentNameSubject, " test subject 😅")
 	c.Set(ContentNameText, "text body")
 	c.Set(ContentNameHTML, "<p><b>html</b> body</p>")
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
-		t.Fatal(status, err)
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+		t.Fatal(status, receipt, err)
 	}
 }

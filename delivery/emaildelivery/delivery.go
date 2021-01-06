@@ -76,17 +76,17 @@ type Delivery struct {
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
-func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, error) {
+func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {
-		return notification.DeliveryStatusAbort, err
+		return notification.DeliveryStatusAbort, "", err
 	}
 	msg := d.SMTP.NewEmail(c)
 	err = d.SMTP.Send(msg)
 	if err != nil {
-		return notification.DeliveryStatusFail, err
+		return notification.DeliveryStatusFail, "", err
 	}
-	return notification.DeliveryStatusSuccess, nil
+	return notification.DeliveryStatusSuccess, "", nil
 
 }
 

@@ -10,3 +10,4 @@ func NewInvalidMsgType(msgtype string) error {
 }
 
 var ErrNewsFormatError = errors.New("wechatworkdelivery: news format error")
+var ErrMPNewsFormatError = errors.New("wechatworkdelivery: mpnews format error")

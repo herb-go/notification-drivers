@@ -2,6 +2,7 @@ package wechatworkdelivery
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -21,14 +22,14 @@ func NewTestDelivery() *Delivery {
 
 var _ notification.DeliveryServer = &Delivery{}
 
-func TestTestMessage(t *testing.T) {
+func TestTextMessage(t *testing.T) {
 	d := NewTestDelivery()
 	c := notification.NewContent()
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeText)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameContent, "test")
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -48,8 +49,8 @@ func TestImageMessage(t *testing.T) {
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeImage)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -71,8 +72,8 @@ func TestVoiceMessage(t *testing.T) {
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeVoice)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -96,8 +97,8 @@ func TestVideoMessage(t *testing.T) {
 	c.Set(ContentNameMediaID, mediaid)
 	c.Set(ContentNameTitle, "video title")
 	c.Set(ContentNameDescription, "video desc")
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -119,8 +120,8 @@ func TestFileMessage(t *testing.T) {
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeFile)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -147,8 +148,78 @@ func TestNewsMessage(t *testing.T) {
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeNews)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameNews, testNews)
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+		t.Fatal(status, err)
+	}
+}
+
+var testMPNews = `
+{
+	"articles":[
+		{
+			"title": "Title", 
+			"thumb_media_id": "%s",
+			"author": "Author",
+			"content_source_url": "https://github.com",
+			"content": "Content",
+			"digest": "Digest description"
+		 }
+	]
+}
+`
+
+func TestNewsMPMessage(t *testing.T) {
+
+	d := NewTestDelivery()
+	c := notification.NewContent()
+	var result []byte
+	_, err := fetcher.NewPreset().With(fetcher.URL(TestPictureURL)).FetchAndParse(fetcher.Should200(fetcher.AsBytes(&result)))
+	if err != nil {
+		panic(err)
+	}
+	mediaid, err := d.Agent.MediaUpload(wechatwork.MediaTypeImage, "test.png", bytes.NewBuffer(result))
+	if err != nil {
+		panic(err)
+	}
+
+	c.Set(ContentNameMsgType, wechatwork.MsgTypeMPNews)
+	c.Set(ContentNameToUser, TestRecipient)
+	c.Set(ContentNameMPNews, fmt.Sprintf(testMPNews, mediaid))
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+		t.Fatal(status, err)
+	}
+}
+func TestTextCardMessage(t *testing.T) {
+	d := NewTestDelivery()
+	c := notification.NewContent()
+	c.Set(ContentNameMsgType, wechatwork.MsgTypeTextcard)
+	c.Set(ContentNameToUser, TestRecipient)
+	c.Set(ContentNameTitle, "test title")
+	c.Set(ContentNameDescription, "test description")
+	c.Set(ContentNameBtntxt, "test btn")
+	c.Set(ContentNameURL, "https://github.com")
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+		t.Fatal(status, err)
+	}
+}
+
+func TestMarkdownMessage(t *testing.T) {
+	d := NewTestDelivery()
+	c := notification.NewContent()
+	c.Set(ContentNameMsgType, wechatwork.MsgTypeMarkdown)
+	c.Set(ContentNameToUser, TestRecipient)
+	c.Set(ContentNameContent, `
+	# test message
+
+	## sub title
+	* value1
+	* value2
+	`)
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }

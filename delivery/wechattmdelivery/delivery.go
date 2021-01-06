@@ -3,6 +3,7 @@ package wechattmdelivery
 import (
 	"encoding/json"
 	"net/url"
+	"strconv"
 
 	"github.com/herb-go/providers/tencent/wechatmp/templatemessage"
 
@@ -35,20 +36,20 @@ func (d *Delivery) buildMsg(c notification.Content) *wechatmp.TemplateMessage {
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
-func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, error) {
+func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {
-		return notification.DeliveryStatusAbort, err
+		return notification.DeliveryStatusAbort, "", err
 	}
 	msg := d.buildMsg(c)
 	result, err := templatemessage.SendTemplateMessage(&d.App, msg)
 	if err != nil {
-		return notification.DeliveryStatusFail, err
+		return notification.DeliveryStatusFail, "", err
 	}
 	if !result.IsOK() {
-		return notification.DeliveryStatusFail, result
+		return notification.DeliveryStatusFail, "", result
 	}
-	return notification.DeliveryStatusSuccess, nil
+	return notification.DeliveryStatusSuccess, strconv.FormatInt(result.MsgID, 10), nil
 }
 
 func (d *Delivery) MustEscape(unescaped string) string {

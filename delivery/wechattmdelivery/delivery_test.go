@@ -22,11 +22,10 @@ func TestTestMessage(t *testing.T) {
 	c.Set(ContentNameTemplateID, TestTemplateID)
 	c.Set(ContentNameData, TestData)
 	c.Set(ContentNameURL, TestURL)
-	status, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil {
-		t.Fatal(status, err)
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt == "" {
+		t.Fatal(status, receipt, err)
 	}
-
 }
 
 func init() {
