@@ -45,6 +45,9 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 		initFunc = d.initTextcardMessage
 	case wechatwork.MsgTypeMarkdown:
 		initFunc = d.initMarkdownMessage
+	case wechatwork.MsgTypeTaskcard:
+		initFunc = d.initTaskcardMessage
+
 	default:
 		return notification.DeliveryStatusAbort, "", NewInvalidMsgType(msgtype)
 	}
@@ -146,7 +149,7 @@ func (d *Delivery) initFileMessage(msg *wechatwork.Message, c notification.Conte
 }
 
 func (d *Delivery) initTextcardMessage(msg *wechatwork.Message, c notification.Content) error {
-	var textcard = &wechatwork.MessageTextCard{}
+	var textcard = &wechatwork.MessageTextcard{}
 	textcard.Title = c.Get(ContentNameTitle)
 	textcard.Description = c.Get(ContentNameDescription)
 	textcard.URL = c.Get(ContentNameURL)
@@ -154,7 +157,25 @@ func (d *Delivery) initTextcardMessage(msg *wechatwork.Message, c notification.C
 	if btntxt != "" {
 		textcard.Btntxt = &btntxt
 	}
-	msg.TextCard = textcard
+	msg.Textcard = textcard
+	return nil
+}
+
+func (d *Delivery) initTaskcardMessage(msg *wechatwork.Message, c notification.Content) error {
+	var taskcard = &wechatwork.MessageTaskcard{}
+	taskcard.Title = c.Get(ContentNameTitle)
+	taskcard.Description = c.Get(ContentNameDescription)
+	url := c.Get(ContentNameURL)
+	taskcard.URL = &url
+	taskcard.TaskID = c.Get(ContentNameTaskID)
+	btnjson := c.Get(ContentNameBtn)
+	var btn []*wechatwork.MessageTaskcardBtn
+	err := json.Unmarshal([]byte(btnjson), &btn)
+	if err != nil {
+		return ErrTaskcardBtnFormatError
+	}
+	taskcard.Btn = btn
+	msg.Taskcard = taskcard
 	return nil
 }
 

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/herb-go/fetcher"
 
@@ -186,6 +188,39 @@ func TestNewsMPMessage(t *testing.T) {
 	c.Set(ContentNameMsgType, wechatwork.MsgTypeMPNews)
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMPNews, fmt.Sprintf(testMPNews, mediaid))
+	status, receipt, err := d.Deliver(c)
+	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+		t.Fatal(status, err)
+	}
+}
+
+var testBtn = `
+[
+                {
+                    "key": "key111",
+                    "name": "批准",
+                    "replace_name": "已批准",
+                    "color":"red",
+                    "is_bold": true
+                },
+                {
+                    "key": "key222",
+                    "name": "驳回",
+                    "replace_name": "已驳回"
+                }
+            ]
+`
+
+func TestTaskcardMessage(t *testing.T) {
+	d := NewTestDelivery()
+	c := notification.NewContent()
+	c.Set(ContentNameMsgType, wechatwork.MsgTypeTaskcard)
+	c.Set(ContentNameToUser, TestRecipient)
+	c.Set(ContentNameTitle, "test title")
+	c.Set(ContentNameDescription, "test description")
+	c.Set(ContentNameURL, "https://github.com/")
+	c.Set(ContentNameTaskID, "test-timestamp-"+strconv.FormatInt(time.Now().Unix(), 10))
+	c.Set(ContentNameBtn, testBtn)
 	status, receipt, err := d.Deliver(c)
 	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
