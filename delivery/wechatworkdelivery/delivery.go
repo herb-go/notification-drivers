@@ -2,6 +2,7 @@ package wechatworkdelivery
 
 import (
 	"encoding/json"
+	"net/url"
 
 	"github.com/herb-go/notification"
 	"github.com/herb-go/providers/tencent/wechatwork"
@@ -57,6 +58,9 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 	}
 	return notification.DeliveryStatusSuccess, nil
 
+}
+func (d *Delivery) MustEscape(unescaped string) string {
+	return url.PathEscape(unescaped)
 }
 
 func (d *Delivery) initMessage(msg *wechatwork.Message, c notification.Content) {

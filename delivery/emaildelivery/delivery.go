@@ -1,6 +1,7 @@
 package emaildelivery
 
 import (
+	"mime"
 	"net/smtp"
 	"strconv"
 	"strings"
@@ -28,17 +29,13 @@ type SMTP struct {
 
 func (s *SMTP) NewEmail(c notification.Content) *email.Email {
 	msg := email.NewEmail()
-	from := c.Get(ContentNameFrom)
-	if from != "" {
-		msg.From = from
-	} else {
-		msg.From = s.From
+	msg.From = s.From
+	if msg.From == "" {
+		msg.From = c.Get(ContentNameFrom)
 	}
-	sender := c.Get(ContentNameSender)
-	if sender != "" {
-		msg.Sender = sender
-	} else {
-		msg.Sender = s.Sender
+	msg.Sender = s.Sender
+	if msg.Sender == "" {
+		msg.Sender = c.Get(ContentNameSender)
 	}
 	msg.Subject = c.Get(ContentNameSubject)
 	text := c.Get(ContentNameText)
@@ -91,4 +88,8 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 	}
 	return notification.DeliveryStatusSuccess, nil
 
+}
+
+func (d *Delivery) MustEscape(unescaped string) string {
+	return mime.BEncoding.Encode("utf-8", unescaped)
 }

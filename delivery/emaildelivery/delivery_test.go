@@ -7,7 +7,8 @@ import (
 )
 
 func newAddr(name string, mail string) string {
-	return MustEscape(name) + " <" + MustEscape(mail) + ">"
+	d := &Delivery{}
+	return d.MustEscape(name) + " <" + d.MustEscape(mail) + ">"
 }
 func NewTestDelivery() *Delivery {
 	d := &Delivery{}
@@ -17,6 +18,7 @@ func NewTestDelivery() *Delivery {
 	d.SMTP.Password = TestPassword
 	d.SMTP.Username = TestUsername
 	d.SMTP.From = TestFrom
+	d.SMTP.Sender = TestSender
 	return d
 }
 
@@ -29,7 +31,7 @@ func TestDelivery(t *testing.T) {
 	c.Set(ContentNameReplyTo, TestReplyTO)
 	c.Set(ContentNameCC, TestCC)
 	c.Set(ContentNameBCC, TestBCC)
-	c.Set(ContentNameSubject, "测试test subject")
+	c.Set(ContentNameSubject, " test subject 😅")
 	c.Set(ContentNameText, "text body")
 	c.Set(ContentNameHTML, "<p><b>html</b> body</p>")
 	status, err := d.Deliver(c)
