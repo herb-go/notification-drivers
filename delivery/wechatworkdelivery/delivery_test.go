@@ -22,7 +22,7 @@ func NewTestDelivery() *Delivery {
 	return d
 }
 
-var _ notification.DeliveryServer = &Delivery{}
+var _ notification.Driver = &Delivery{}
 
 func TestTextMessage(t *testing.T) {
 	d := NewTestDelivery()
