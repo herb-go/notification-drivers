@@ -5,7 +5,7 @@ import (
 )
 
 type Store interface {
-	List(start string, count int) ([]*notificationqueue.Execution, error)
+	List(start string, count int) ([]*notificationqueue.Execution, string, error)
 	Insert(execution *notificationqueue.Execution) error
 	Replace(eid string, new *notificationqueue.Execution) error
 	Remove(nid string) error

@@ -88,16 +88,18 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 func (q *Queue) execute() {
 	defer q.Recover()
 	var iter = ""
+	var err error
+	var list []*notificationqueue.Execution
 	for {
-		list, err := q.Store.List(iter, q.ExecuteCount)
+		list, iter, err = q.Store.List(iter, q.ExecuteCount)
 		if err != nil {
 			panic(err)
 		}
-		if len(list) == 0 {
-			return
-		}
 		for _, e := range list {
 			go q.retry(e)
+		}
+		if iter == "" {
+			return
 		}
 	}
 }
