@@ -16,6 +16,7 @@ import (
 //RequiredKvdbFeatures required kvdb featuers
 var RequiredKvdbFeatures = kvdb.FeatureEmbedded | kvdb.FeatureStore | kvdb.FeatureNext | kvdb.FeaturePrev
 
+//SupportedConditions supported filter conditions
 var SupportedConditions = []string{
 	notificationqueue.ConditionBatch,
 	notificationqueue.ConditionNotificationID,
@@ -27,21 +28,30 @@ var SupportedConditions = []string{
 	notificationqueue.ConditionAfterTimestamp,
 }
 
+//Draftbox draftbox struct
 type Draftbox struct {
 	locker sync.Mutex
 	DB     *kvdb.Database
 	Limit  int
 }
 
+//New create new draft box
 func New() *Draftbox {
 	return &Draftbox{}
 }
+
+//Open open draftbox and return any error if raised
 func (d *Draftbox) Open() error {
 	return d.DB.Start()
 }
+
+//Close close draftbox and return any error if raised
 func (d *Draftbox) Close() error {
 	return d.DB.Stop()
 }
+
+//Draft save given notificaiton to draft box.
+//Notification with same id will be overwritten.
 func (d *Draftbox) Draft(n *notification.Notification) error {
 	d.locker.Lock()
 	defer d.locker.Unlock()
@@ -51,6 +61,11 @@ func (d *Draftbox) Draft(n *notification.Notification) error {
 	}
 	return d.DB.Set([]byte(n.ID), bs)
 }
+
+//List list no more than count notifactions in draftbox with given search conditions form start position .
+//Count should be greater than 0.
+//Found notifications and next list position iter will be returned.
+//Return largest id notification if asc is false.
 func (d *Draftbox) List(condition []*notificationqueue.Condition, start string, asc bool, count int) (result []*notification.Notification, iter string, err error) {
 	var data []*herbdata.KeyValue
 	var iterbs = []byte(start)
@@ -98,6 +113,8 @@ func (d *Draftbox) List(condition []*notificationqueue.Condition, start string, 
 	}
 	return result, "", nil
 }
+
+//Count draft box with given search conditions
 func (d *Draftbox) Count(condition []*notificationqueue.Condition) (int, error) {
 	var iter []byte
 	var data []*herbdata.KeyValue
@@ -139,9 +156,13 @@ func (d *Draftbox) Count(condition []*notificationqueue.Condition) (int, error) 
 	}
 	return result, nil
 }
+
+//SupportedConditions return supported condition keyword list
 func (d *Draftbox) SupportedConditions() ([]string, error) {
 	return SupportedConditions, nil
 }
+
+//Eject remove notification by given id and return removed notification.
 func (d *Draftbox) Eject(id string) (*notification.Notification, error) {
 	d.locker.Lock()
 	defer d.locker.Unlock()
@@ -164,11 +185,15 @@ func (d *Draftbox) Eject(id string) (*notification.Notification, error) {
 	return n, nil
 }
 
+//Config draft box config
 type Config struct {
+	//Database kvdb config
 	Database *kvdb.Config
-	Limit    int
+	//Limit count limit,defalut value is notificationquque.DefaultDraftboxListLimit
+	Limit int
 }
 
+//CreateDraftbox create draftbox with config
 func (c *Config) CreateDraftbox() (notificationqueue.Draftbox, error) {
 	var err error
 	d := New()
