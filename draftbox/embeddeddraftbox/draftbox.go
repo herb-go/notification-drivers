@@ -147,6 +147,9 @@ func (d *Draftbox) Eject(id string) (*notification.Notification, error) {
 	defer d.locker.Unlock()
 	bs, err := d.DB.Get([]byte(id))
 	if err != nil {
+		if err == herbdata.ErrNotFound {
+			return nil, notification.NewErrNotificationIDNotFound(id)
+		}
 		return nil, err
 	}
 	err = d.DB.Delete([]byte(id))
