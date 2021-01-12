@@ -53,10 +53,10 @@ func (d *Draftbox) Draft(n *notification.Notification) error {
 }
 func (d *Draftbox) List(condition []*notificationqueue.Condition, start string, asc bool, count int) (result []*notification.Notification, iter string, err error) {
 	var data []*herbdata.KeyValue
-	var iterbs []byte
+	var iterbs = []byte(start)
 	var ok bool
 	ts := time.Now().Unix()
-	limit := d.Limit
+	limit := count
 	if limit <= 0 {
 		limit = notificationqueue.DefaultDraftboxListLimit
 	}
@@ -67,9 +67,9 @@ func (d *Draftbox) List(condition []*notificationqueue.Condition, start string, 
 	}
 	for {
 		if asc {
-			data, iterbs, err = d.DB.Prev(iterbs, limit)
-		} else {
 			data, iterbs, err = d.DB.Next(iterbs, limit)
+		} else {
+			data, iterbs, err = d.DB.Prev(iterbs, limit)
 		}
 		if err != nil {
 			return nil, "", err
@@ -171,7 +171,7 @@ type Config struct {
 
 func (c *Config) CreateDraftbox() (notificationqueue.Draftbox, error) {
 	var err error
-	d := &Draftbox{}
+	d := New()
 	d.DB = kvdb.New()
 	err = c.Database.ApplyTo(d.DB)
 	if err != nil {
