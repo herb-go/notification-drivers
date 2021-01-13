@@ -32,7 +32,7 @@ func NewTestDelivery() *Delivery {
 	return d.(*Delivery)
 }
 
-var _ notification.DeliveryDriver = &Delivery{}
+var _ notificationdelivery.DeliveryDriver = &Delivery{}
 
 func TestTextMessage(t *testing.T) {
 	d := NewTestDelivery()
@@ -41,7 +41,7 @@ func TestTextMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameContent, "test")
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -62,7 +62,7 @@ func TestImageMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -85,7 +85,7 @@ func TestVoiceMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -110,7 +110,7 @@ func TestVideoMessage(t *testing.T) {
 	c.Set(ContentNameTitle, "video title")
 	c.Set(ContentNameDescription, "video desc")
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -133,7 +133,7 @@ func TestFileMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMediaID, mediaid)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -161,7 +161,7 @@ func TestNewsMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameNews, testNews)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -199,7 +199,7 @@ func TestNewsMPMessage(t *testing.T) {
 	c.Set(ContentNameToUser, TestRecipient)
 	c.Set(ContentNameMPNews, fmt.Sprintf(testMPNews, mediaid))
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -232,7 +232,7 @@ func TestTaskcardMessage(t *testing.T) {
 	c.Set(ContentNameTaskID, "test-timestamp-"+strconv.FormatInt(time.Now().Unix(), 10))
 	c.Set(ContentNameBtn, testBtn)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -246,7 +246,7 @@ func TestTextCardMessage(t *testing.T) {
 	c.Set(ContentNameBtntxt, "test btn")
 	c.Set(ContentNameURL, "https://github.com")
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
@@ -264,7 +264,7 @@ func TestMarkdownMessage(t *testing.T) {
 	* value2
 	`)
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }

@@ -16,14 +16,14 @@ type Delivery struct {
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
-func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, string, error) {
+func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {
-		return notification.DeliveryStatusAbort, "", err
+		return notificationdelivery.DeliveryStatusAbort, "", err
 	}
 	var msgtype = c.Get(ContentNameMsgType)
 	if msgtype == "" {
-		return notification.DeliveryStatusAbort, "", NewInvalidMsgType(msgtype)
+		return notificationdelivery.DeliveryStatusAbort, "", NewInvalidMsgType(msgtype)
 	}
 	msg := wechatwork.NewMessage()
 	var initFunc func(msg *wechatwork.Message, c notification.Content) error
@@ -50,22 +50,22 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 		initFunc = d.initTaskcardMessage
 
 	default:
-		return notification.DeliveryStatusAbort, "", NewInvalidMsgType(msgtype)
+		return notificationdelivery.DeliveryStatusAbort, "", NewInvalidMsgType(msgtype)
 	}
 	err = initFunc(msg, c)
 	if err != nil {
-		return notification.DeliveryStatusFail, "", err
+		return notificationdelivery.DeliveryStatusFail, "", err
 	}
 	msg.MsgType = msgtype
 	d.initMessage(msg, c)
 	result, err := d.Agent.SendMessage(msg)
 	if err != nil {
-		return notification.DeliveryStatusFail, "", err
+		return notificationdelivery.DeliveryStatusFail, "", err
 	}
 	if result.Errcode != 0 {
-		return notification.DeliveryStatusAbort, "", wechatwork.NewResultError(result.Errcode, result.Errmsg)
+		return notificationdelivery.DeliveryStatusAbort, "", wechatwork.NewResultError(result.Errcode, result.Errmsg)
 	}
-	return notification.DeliveryStatusSuccess, "", nil
+	return notificationdelivery.DeliveryStatusSuccess, "", nil
 
 }
 func (d *Delivery) MustEscape(unescaped string) string {
@@ -191,7 +191,7 @@ type Config struct {
 	wechatwork.Agent
 }
 
-var Factory = func(loader func(interface{}) error) (notification.DeliveryDriver, error) {
+var Factory = func(loader func(interface{}) error) (notificationdelivery.DeliveryDriver, error) {
 	c := &Config{}
 	err := loader(c)
 	if err != nil {

@@ -35,7 +35,7 @@ func NewTestDelivery() *Delivery {
 	return d.(*Delivery)
 }
 
-var _ notification.DeliveryDriver = &Delivery{}
+var _ notificationdelivery.DeliveryDriver = &Delivery{}
 
 func TestDelivery(t *testing.T) {
 	d := NewTestDelivery()
@@ -48,7 +48,7 @@ func TestDelivery(t *testing.T) {
 	c.Set(ContentNameText, "text body")
 	c.Set(ContentNameHTML, "<p><b>html</b> body</p>")
 	status, receipt, err := d.Deliver(c)
-	if status != notification.DeliveryStatusSuccess || err != nil || receipt != "" {
+	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, receipt, err)
 	}
 }

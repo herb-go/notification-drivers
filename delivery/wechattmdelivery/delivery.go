@@ -37,20 +37,20 @@ func (d *Delivery) buildMsg(c notification.Content) *wechatmp.TemplateMessage {
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
-func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus, string, error) {
+func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {
-		return notification.DeliveryStatusAbort, "", err
+		return notificationdelivery.DeliveryStatusAbort, "", err
 	}
 	msg := d.buildMsg(c)
 	result, err := templatemessage.SendTemplateMessage(&d.App, msg)
 	if err != nil {
-		return notification.DeliveryStatusFail, "", err
+		return notificationdelivery.DeliveryStatusFail, "", err
 	}
 	if !result.IsOK() {
-		return notification.DeliveryStatusFail, "", result
+		return notificationdelivery.DeliveryStatusFail, "", result
 	}
-	return notification.DeliveryStatusSuccess, strconv.FormatInt(result.MsgID, 10), nil
+	return notificationdelivery.DeliveryStatusSuccess, strconv.FormatInt(result.MsgID, 10), nil
 }
 
 func (d *Delivery) MustEscape(unescaped string) string {
@@ -61,7 +61,7 @@ type Config struct {
 	wechatmp.App
 }
 
-var Factory = func(loader func(interface{}) error) (notification.DeliveryDriver, error) {
+var Factory = func(loader func(interface{}) error) (notificationdelivery.DeliveryDriver, error) {
 	c := &Config{}
 	err := loader(c)
 	if err != nil {
