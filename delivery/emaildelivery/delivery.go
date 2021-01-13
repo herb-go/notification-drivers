@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification/notificationdelivery"
 
 	"github.com/jordan-wright/email"
 )
@@ -25,6 +26,7 @@ type SMTP struct {
 	Username string
 	// Pasword email smtp password
 	Password string
+	StartTLS bool
 }
 
 func (s *SMTP) NewEmail(c notification.Content) *email.Email {
@@ -66,6 +68,9 @@ func (s *SMTP) NewEmail(c notification.Content) *email.Email {
 }
 
 func (s *SMTP) Send(msg *email.Email) error {
+	if s.StartTLS {
+		msg.SendWithStartTLS(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host), nil)
+	}
 	return msg.Send(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host))
 }
 
@@ -92,4 +97,24 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 
 func (d *Delivery) MustEscape(unescaped string) string {
 	return mime.BEncoding.Encode("utf-8", unescaped)
+}
+
+type Config struct {
+	SMTP SMTP
+}
+
+var Factory = func(loader func(interface{}) error) (notification.DeliveryDriver, error) {
+	c := &Config{}
+	err := loader(c)
+	if err != nil {
+		return nil, err
+	}
+	d := &Delivery{
+		SMTP: c.SMTP,
+	}
+	return d, nil
+}
+
+func init() {
+	notificationdelivery.Register(DeliveryType, Factory)
 }

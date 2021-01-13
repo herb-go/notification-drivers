@@ -4,16 +4,29 @@ import (
 	"testing"
 
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification/notificationdelivery"
 )
 
 func NewTestDelivery() *Delivery {
-	d := &Delivery{}
-	d.App.AppID = TestAppID
-	d.App.AppSecret = TestSecret
-	return d
+	dc := &notificationdelivery.Config{
+		DeliveryType: DeliveryType,
+		DeliveryConfig: func(v interface{}) error {
+			c := &Config{}
+			c.App.AppID = TestAppID
+			c.App.AppSecret = TestSecret
+
+			v.(*Config).App = c.App
+			return nil
+		},
+	}
+	d, err := dc.CreateDriver()
+	if err != nil {
+		panic(err)
+	}
+	return d.(*Delivery)
 }
 
-var _ notification.Driver = &Delivery{}
+var _ notification.DeliveryDriver = &Delivery{}
 
 func TestTestMessage(t *testing.T) {
 	d := NewTestDelivery()

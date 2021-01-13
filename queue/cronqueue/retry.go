@@ -3,7 +3,7 @@ package cronqueue
 import (
 	"time"
 
-	"github.com/herb-go/notification/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 type RetryHandler interface {

@@ -8,7 +8,7 @@ import (
 	"github.com/herb-go/herbdata"
 
 	"github.com/herb-go/herbdata/kvdb"
-	"github.com/herb-go/notification/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 type Store struct {

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/herb-go/notification"
-	"github.com/herb-go/notification/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 type Queue struct {

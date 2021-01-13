@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/providers/tencent/wechatwork"
 )
 
@@ -184,4 +185,24 @@ func (d *Delivery) initMarkdownMessage(msg *wechatwork.Message, c notification.C
 		Content: c.Get(ContentNameContent),
 	}
 	return nil
+}
+
+type Config struct {
+	wechatwork.Agent
+}
+
+var Factory = func(loader func(interface{}) error) (notification.DeliveryDriver, error) {
+	c := &Config{}
+	err := loader(c)
+	if err != nil {
+		return nil, err
+	}
+	d := &Delivery{
+		Agent: c.Agent,
+	}
+	return d, nil
+}
+
+func init() {
+	notificationdelivery.Register(DeliveryType, Factory)
 }

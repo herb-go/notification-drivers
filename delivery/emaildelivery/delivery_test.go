@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification/notificationdelivery"
 )
 
 func newAddr(name string, mail string) string {
@@ -11,18 +12,30 @@ func newAddr(name string, mail string) string {
 	return d.MustEscape(name) + " <" + d.MustEscape(mail) + ">"
 }
 func NewTestDelivery() *Delivery {
-	d := &Delivery{}
-	d.SMTP.Host = TestHost
-	d.SMTP.Port = TestPort
-	d.SMTP.Identity = TestIdentity
-	d.SMTP.Password = TestPassword
-	d.SMTP.Username = TestUsername
-	d.SMTP.From = TestFrom
-	d.SMTP.Sender = TestSender
-	return d
+	c := &Config{}
+	c.SMTP.Host = TestHost
+	c.SMTP.Port = TestPort
+	c.SMTP.Identity = TestIdentity
+	c.SMTP.Password = TestPassword
+	c.SMTP.Username = TestUsername
+	c.SMTP.From = TestFrom
+	c.SMTP.Sender = TestSender
+	c.SMTP.StartTLS = TestStartTLS
+	dc := &notificationdelivery.Config{
+		DeliveryType: DeliveryType,
+		DeliveryConfig: func(v interface{}) error {
+			v.(*Config).SMTP = c.SMTP
+			return nil
+		},
+	}
+	d, err := dc.CreateDriver()
+	if err != nil {
+		panic(err)
+	}
+	return d.(*Delivery)
 }
 
-var _ notification.Driver = &Delivery{}
+var _ notification.DeliveryDriver = &Delivery{}
 
 func TestDelivery(t *testing.T) {
 	d := NewTestDelivery()

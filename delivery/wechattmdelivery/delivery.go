@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/providers/tencent/wechatmp/templatemessage"
 
 	"github.com/herb-go/notification"
@@ -54,4 +55,24 @@ func (d *Delivery) Deliver(c notification.Content) (notification.DeliveryStatus,
 
 func (d *Delivery) MustEscape(unescaped string) string {
 	return url.PathEscape(unescaped)
+}
+
+type Config struct {
+	wechatmp.App
+}
+
+var Factory = func(loader func(interface{}) error) (notification.DeliveryDriver, error) {
+	c := &Config{}
+	err := loader(c)
+	if err != nil {
+		return nil, err
+	}
+	d := &Delivery{
+		App: c.App,
+	}
+	return d, nil
+}
+
+func init() {
+	notificationdelivery.Register(DeliveryType, Factory)
 }

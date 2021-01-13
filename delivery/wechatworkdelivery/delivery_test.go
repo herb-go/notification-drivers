@@ -9,20 +9,30 @@ import (
 	"time"
 
 	"github.com/herb-go/fetcher"
+	"github.com/herb-go/notification/notificationdelivery"
 
 	"github.com/herb-go/notification"
 	"github.com/herb-go/providers/tencent/wechatwork"
 )
 
 func NewTestDelivery() *Delivery {
-	d := &Delivery{}
-	d.Agent.AgentID = TestAgentID
-	d.Agent.CorpID = TestCorpID
-	d.Agent.Secret = TestSecret
-	return d
+	dc := &notificationdelivery.Config{
+		DeliveryType: DeliveryType,
+		DeliveryConfig: func(v interface{}) error {
+			v.(*Config).Agent.AgentID = TestAgentID
+			v.(*Config).Agent.CorpID = TestCorpID
+			v.(*Config).Agent.Secret = TestSecret
+			return nil
+		},
+	}
+	d, err := dc.CreateDriver()
+	if err != nil {
+		panic(err)
+	}
+	return d.(*Delivery)
 }
 
-var _ notification.Driver = &Delivery{}
+var _ notification.DeliveryDriver = &Delivery{}
 
 func TestTextMessage(t *testing.T) {
 	d := NewTestDelivery()

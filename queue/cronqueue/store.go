@@ -1,7 +1,7 @@
 package cronqueue
 
 import (
-	"github.com/herb-go/notification/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 type Store interface {

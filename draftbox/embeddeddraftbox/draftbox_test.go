@@ -11,7 +11,7 @@ import (
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification-drivers/draftbox/embeddeddraftbox"
-	"github.com/herb-go/notification/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 func TestDraftbox(t *testing.T) {
