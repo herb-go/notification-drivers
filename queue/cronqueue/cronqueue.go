@@ -74,13 +74,22 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	ok, err := q.RetryHandler.HandleRetry(e)
 	if err != nil {
 		q.OnError(err)
+		return
 	}
 	if !ok {
 		err = q.Remove(e.Notification.ID)
 		if err != nil {
 			q.OnError(err)
+			return
 		}
 		q.OnRetryTooMany(e)
+		return
+	}
+	eid := e.ExecutionID
+	e.ExecutionID, err = q.IDGenerator()
+	err = q.Store.Replace(eid, e)
+	if err != nil {
+		q.OnError(err)
 		return
 	}
 	q.pushExecution(e)
@@ -93,7 +102,8 @@ func (q *Queue) execute() {
 	for {
 		list, iter, err = q.Store.List(iter, q.ExecuteCount)
 		if err != nil {
-			panic(err)
+			q.OnError(err)
+			return
 		}
 		for _, e := range list {
 			go q.retry(e)

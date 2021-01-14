@@ -48,7 +48,7 @@ func (s *Store) Insert(execution *notificationqueue.Execution) error {
 	if err != herbdata.ErrNotFound {
 		return err
 	}
-	return s.DB.Set([]byte(execution.ExecutionID), bs)
+	return s.DB.Set([]byte(execution.Notification.ID), bs)
 }
 func (s *Store) Replace(eid string, new *notificationqueue.Execution) error {
 	s.locker.Lock()
@@ -81,4 +81,8 @@ func (s *Store) Start() error {
 }
 func (s *Store) Stop() error {
 	return s.DB.Stop()
+}
+
+func New() *Store {
+	return &Store{}
 }
