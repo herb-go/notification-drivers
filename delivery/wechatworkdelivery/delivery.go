@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"github.com/herb-go/fetcher"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/providers/tencent/wechatwork"
@@ -11,6 +12,12 @@ import (
 
 type Delivery struct {
 	Agent wechatwork.Agent
+}
+
+//CheckInvalidContent check if given content invalid
+//Return invalid fields and any error raised
+func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error) {
+	return notification.CheckRequiredContent(c, RequeiredContent), nil
 }
 
 func (d *Delivery) DeliveryType() string {
@@ -58,12 +65,12 @@ func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.Deliver
 	}
 	msg.MsgType = msgtype
 	d.initMessage(msg, c)
-	result, err := d.Agent.SendMessage(msg)
+	_, err = d.Agent.SendMessage(msg)
 	if err != nil {
+		if fetcher.GetAPIErrCode(err) != "" {
+			return notificationdelivery.DeliveryStatusAbort, fetcher.GetAPIErrContent(err), nil
+		}
 		return notificationdelivery.DeliveryStatusFail, "", err
-	}
-	if result.Errcode != 0 {
-		return notificationdelivery.DeliveryStatusAbort, "", wechatwork.NewResultError(result.Errcode, result.Errmsg)
 	}
 	return notificationdelivery.DeliveryStatusSuccess, "", nil
 

@@ -9,4 +9,4 @@ var ContentNameMiniProgram = "miniprogram"
 var ContentNamePagePath = "pagepath"
 var ContentNameData = "data"
 
-var RequeiredContent = []string{ContentNameToUser, ContentNameTemplateID}
+var RequeiredContent = []string{ContentNameToUser, ContentNameTemplateID, ContentNameData}

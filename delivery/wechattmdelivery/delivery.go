@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/herb-go/fetcher"
+
 	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/providers/tencent/wechatmp/templatemessage"
 
@@ -14,6 +16,22 @@ import (
 
 type Delivery struct {
 	App wechatmp.App
+}
+
+//CheckInvalidContent check if given content invalid
+//Return invalid fields and any error raised
+func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error) {
+	invalids := notification.CheckRequiredContent(c, RequeiredContent)
+	if len(invalids) > 0 {
+		return invalids, nil
+	}
+	data := c.Get(ContentNameData)
+	var result interface{}
+	err := json.Unmarshal([]byte(data), &result)
+	if err != nil {
+		return []string{ContentNameData}, nil
+	}
+	return []string{}, nil
 }
 
 func (d *Delivery) buildMsg(c notification.Content) *wechatmp.TemplateMessage {
@@ -45,10 +63,10 @@ func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.Deliver
 	msg := d.buildMsg(c)
 	result, err := templatemessage.SendTemplateMessage(&d.App, msg)
 	if err != nil {
+		if fetcher.GetAPIErrCode(err) != "" {
+			return notificationdelivery.DeliveryStatusAbort, fetcher.GetAPIErrContent(err), nil
+		}
 		return notificationdelivery.DeliveryStatusFail, "", err
-	}
-	if !result.IsOK() {
-		return notificationdelivery.DeliveryStatusFail, "", result
 	}
 	return notificationdelivery.DeliveryStatusSuccess, strconv.FormatInt(result.MsgID, 10), nil
 }
