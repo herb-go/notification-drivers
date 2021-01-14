@@ -62,9 +62,15 @@ func (q *Queue) Push(n *notification.Notification) error {
 	if err != nil {
 		return err
 	}
-	err = q.Store.Insert(e)
+	ok, err := q.RetryHandler.HandleRetry(e)
 	if err != nil {
 		return err
+	}
+	if ok {
+		err = q.Store.Insert(e)
+		if err != nil {
+			return err
+		}
 	}
 	go q.pushExecution(e)
 	return nil
@@ -95,11 +101,12 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	}
 	e.ExecutionID, err = q.IDGenerator()
 	err = q.Store.Replace(eid, e)
+
 	if err != nil {
 		q.OnError(err)
 		return
 	}
-	q.pushExecution(e)
+	go q.pushExecution(e)
 }
 func (q *Queue) execute() {
 	defer q.Recover()
@@ -113,7 +120,7 @@ func (q *Queue) execute() {
 			return
 		}
 		for _, e := range list {
-			go q.retry(e)
+			q.retry(e)
 		}
 		if iter == "" {
 			return
