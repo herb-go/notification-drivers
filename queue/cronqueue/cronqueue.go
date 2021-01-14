@@ -7,6 +7,9 @@ import (
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
+var DefaultInterval = time.Minute
+var DefaultExecuteCount = 10
+
 type Queue struct {
 	Store            Store
 	Timeout          time.Duration
@@ -71,6 +74,10 @@ func (q *Queue) Remove(nid string) error {
 
 func (q *Queue) retry(e *notificationqueue.Execution) {
 	defer q.Recover()
+	if time.Now().Unix() <= e.RetryAfterTime {
+		return
+	}
+	eid := e.ExecutionID
 	ok, err := q.RetryHandler.HandleRetry(e)
 	if err != nil {
 		q.OnError(err)
@@ -85,7 +92,6 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 		q.OnRetryTooMany(e)
 		return
 	}
-	eid := e.ExecutionID
 	e.ExecutionID, err = q.IDGenerator()
 	err = q.Store.Replace(eid, e)
 	if err != nil {
@@ -126,15 +132,17 @@ func (q *Queue) cron() {
 func (q *Queue) Start() error {
 	q.c = make(chan int)
 	go q.cron()
-	return nil
+	return q.Store.Start()
 }
 func (q *Queue) Stop() error {
 	close(q.c)
-	return nil
+	return q.Store.Stop()
 }
 
 func New() *Queue {
 	return &Queue{
-		pipe: make(chan *notificationqueue.Execution),
+		Interval:     DefaultInterval,
+		ExecuteCount: DefaultExecuteCount,
+		pipe:         make(chan *notificationqueue.Execution),
 	}
 }

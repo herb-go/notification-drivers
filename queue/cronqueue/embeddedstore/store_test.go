@@ -32,14 +32,14 @@ func newTestStore() *embeddedstore.Store {
 	return s
 }
 
-func Clean() {
+func clean() {
 	if tmpdir != "" {
 		os.RemoveAll(tmpdir)
 	}
 }
 func TestStore(t *testing.T) {
 	s := newTestStore()
-	defer Clean()
+	defer clean()
 	err := s.Start()
 	if err != nil {
 		panic(err)
