@@ -9,6 +9,7 @@ import (
 
 var DefaultInterval = time.Minute
 var DefaultExecuteCount = 10
+var DefaultTimeout = time.Minute
 
 type Queue struct {
 	Store            Store
@@ -142,6 +143,7 @@ func (q *Queue) Stop() error {
 func New() *Queue {
 	return &Queue{
 		Interval:     DefaultInterval,
+		Timeout:      DefaultTimeout,
 		ExecuteCount: DefaultExecuteCount,
 		pipe:         make(chan *notificationqueue.Execution),
 	}
