@@ -19,20 +19,12 @@ type Queue struct {
 	IDGenerator      func() (string, error)
 	c                chan int
 	pipe             chan *notificationqueue.Execution
-	OnError          func(error)
+	Recover          func()
 	OnDeliverTimeout func(*notificationqueue.Execution)
 	OnRetryTooMany   func(*notificationqueue.Execution)
 	RetryHandler     RetryHandler
 }
 
-func (q *Queue) Recover() {
-	r := recover()
-	if r != nil {
-		err := r.(error)
-		q.OnError(err)
-	}
-
-}
 func (q *Queue) PopChan() (<-chan *notificationqueue.Execution, error) {
 	return q.pipe, nil
 }
@@ -87,14 +79,12 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	eid := e.ExecutionID
 	ok, err := q.RetryHandler.HandleRetry(e)
 	if err != nil {
-		q.OnError(err)
-		return
+		panic(err)
 	}
 	if !ok {
 		err = q.Remove(e.Notification.ID)
 		if err != nil {
-			q.OnError(err)
-			return
+			panic(err)
 		}
 		q.OnRetryTooMany(e)
 		return
@@ -103,8 +93,7 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	err = q.Store.Replace(eid, e)
 
 	if err != nil {
-		q.OnError(err)
-		return
+		panic(err)
 	}
 	go q.pushExecution(e)
 }
@@ -116,8 +105,7 @@ func (q *Queue) execute() {
 	for {
 		list, iter, err = q.Store.List(iter, q.ExecuteCount)
 		if err != nil {
-			q.OnError(err)
-			return
+			panic(err)
 		}
 		for _, e := range list {
 			q.retry(e)

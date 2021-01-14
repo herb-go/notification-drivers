@@ -59,8 +59,12 @@ func initTest() {
 	timeoutlist = []*notificationqueue.Execution{}
 	retrytoomany = []*notificationqueue.Execution{}
 }
-func testOnError(err error) {
-	errorlist = append(errorlist, err)
+func testOnError() {
+	r := recover()
+	if r != nil {
+		err := r.(error)
+		errorlist = append(errorlist, err)
+	}
 }
 
 func testOnTimeout(e *notificationqueue.Execution) {
@@ -90,7 +94,7 @@ func newTestQueue() *Queue {
 	if err != nil {
 		panic(err)
 	}
-	q.OnError = testOnError
+	q.Recover = testOnError
 	q.Interval = time.Second
 	q.OnDeliverTimeout = testOnTimeout
 	q.OnRetryTooMany = testRetryTooMany
