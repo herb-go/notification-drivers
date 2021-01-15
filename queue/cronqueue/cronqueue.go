@@ -26,6 +26,7 @@ type Queue struct {
 	c                chan int
 	pipe             chan *notificationqueue.Execution
 	Recover          func()
+	OnExecution      func(*notificationqueue.Execution)
 	OnDeliverTimeout func(*notificationqueue.Execution)
 	OnRetryTooMany   func(*notificationqueue.Execution)
 	RetryHandler     RetryHandler
@@ -36,8 +37,7 @@ func (q *Queue) PopChan() (<-chan *notificationqueue.Execution, error) {
 	return q.pipe, nil
 }
 
-//NewExecution create new execution with given notification
-func (q *Queue) NewExecution(n *notification.Notification) (*notificationqueue.Execution, error) {
+func (q *Queue) createExecution(n *notification.Notification) (*notificationqueue.Execution, error) {
 	var err error
 	eid, err := q.IDGenerator()
 	if err != nil {
@@ -51,6 +51,7 @@ func (q *Queue) NewExecution(n *notification.Notification) (*notificationqueue.E
 }
 
 func (q *Queue) pushExecution(e *notificationqueue.Execution) {
+	go q.OnExecution(e)
 	select {
 	case q.pipe <- e:
 	case <-time.After(q.Timeout):
@@ -60,7 +61,7 @@ func (q *Queue) pushExecution(e *notificationqueue.Execution) {
 
 //Push push notification to queue
 func (q *Queue) Push(n *notification.Notification) error {
-	e, err := q.NewExecution(n)
+	e, err := q.createExecution(n)
 	if err != nil {
 		return err
 	}
@@ -164,6 +165,9 @@ func (q *Queue) AttachTo(n *notificationqueue.Notifier) error {
 	}
 	q.IDGenerator = func() (string, error) {
 		return n.IDGenerator()
+	}
+	q.OnExecution = func(e *notificationqueue.Execution) {
+		n.OnExecution(e)
 	}
 	return nil
 }

@@ -201,7 +201,7 @@ func TestRetryTooMany(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	q.Interval = time.Second
+	q.Interval = 500 * time.Millisecond
 	q.RetryHandler = r
 	defer clean()
 	c, err := q.PopChan()
