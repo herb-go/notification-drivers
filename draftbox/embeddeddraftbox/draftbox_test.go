@@ -250,3 +250,37 @@ func TestDraftbox(t *testing.T) {
 		t.Fatal(result)
 	}
 }
+
+func TestDirective(t *testing.T) {
+	tmpdir, err := ioutil.TempDir("", "")
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if tmpdir == "" {
+			return
+		}
+		os.RemoveAll(tmpdir)
+	}()
+	dbconfig := &kvdb.Config{
+		Driver: "leveldb",
+		Config: func(v interface{}) error {
+			lc := v.(*leveldb.Config)
+			lc.Database = tmpdir
+			return nil
+		},
+	}
+	d, err := notificationqueue.NewDirective(embeddeddraftbox.DirectiveName, func(v interface{}) error {
+		v.(*embeddeddraftbox.Config).Database = dbconfig
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+	p := notificationqueue.NewPublisher()
+	d.AppylToPublisher(p)
+	_, ok := p.Draftbox.(*embeddeddraftbox.Draftbox)
+	if !ok {
+		t.Fatal(d)
+	}
+}

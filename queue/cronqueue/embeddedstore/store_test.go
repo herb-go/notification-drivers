@@ -15,8 +15,9 @@ import (
 var tmpdir string
 
 func newTestStore() *embeddedstore.Store {
+	var err error
 	s := embeddedstore.New()
-	tmpdir, err := ioutil.TempDir("", "")
+	tmpdir, err = ioutil.TempDir("", "")
 	if err != nil {
 		panic(err)
 	}

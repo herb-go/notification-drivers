@@ -23,6 +23,7 @@ func (d *Delivery) CheckInvalidContent(notification.Content) ([]string, error) {
 	return []string{}, nil
 }
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
+
 	bs, err := json.Marshal(c)
 	if err != nil {
 		return notificationdelivery.DeliveryStatusAbort, "", err

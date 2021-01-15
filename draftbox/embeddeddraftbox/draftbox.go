@@ -13,6 +13,9 @@ import (
 	"github.com/vmihailenco/msgpack"
 )
 
+//DirectiveName registered direcvive name
+const DirectiveName = "embeddeddraftbox"
+
 //RequiredKvdbFeatures required kvdb featuers
 var RequiredKvdbFeatures = kvdb.FeatureEmbedded | kvdb.FeatureStore | kvdb.FeatureNext | kvdb.FeaturePrev
 
@@ -211,4 +214,28 @@ func (c *Config) CreateDraftbox() (notificationqueue.Draftbox, error) {
 		return nil, err
 	}
 	return d, nil
+}
+
+//AppylToPublisher create draft box and add to publisher
+func (c *Config) AppylToPublisher(p *notificationqueue.Publisher) error {
+	draftbox, err := c.CreateDraftbox()
+	if err != nil {
+		return err
+	}
+	p.Draftbox = draftbox
+	return nil
+}
+
+//Factory draftbox directive factory
+var Factory = func(loader func(v interface{}) error) (notificationqueue.Directive, error) {
+	c := &Config{}
+	err := loader(c)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func init() {
+	notificationqueue.Register(DirectiveName, Factory)
 }

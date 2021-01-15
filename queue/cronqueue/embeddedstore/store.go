@@ -11,11 +11,13 @@ import (
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
+//Store embedded store
 type Store struct {
 	locker sync.Mutex
 	DB     *kvdb.Database
 }
 
+//List list queued Execution form start
 func (s *Store) List(start string, count int) ([]*notificationqueue.Execution, string, error) {
 	s.locker.Lock()
 	defer s.locker.Unlock()
@@ -34,6 +36,9 @@ func (s *Store) List(start string, count int) ([]*notificationqueue.Execution, s
 	}
 	return results, string(iter), nil
 }
+
+//Insert insert execution to queue.
+//Do nothing if notifiaction exsits
 func (s *Store) Insert(execution *notificationqueue.Execution) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
@@ -50,6 +55,9 @@ func (s *Store) Insert(execution *notificationqueue.Execution) error {
 	}
 	return s.DB.Set([]byte(execution.Notification.ID), bs)
 }
+
+//Replace exectution in queue with given eid.
+//Do nothing if eid not match.
 func (s *Store) Replace(eid string, new *notificationqueue.Execution) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
@@ -71,18 +79,26 @@ func (s *Store) Replace(eid string, new *notificationqueue.Execution) error {
 	}
 	return s.DB.Set([]byte(new.Notification.ID), bs)
 }
+
+//Remove notifcation with given nid form queue.
+//Do nothing if notificatio not found
 func (s *Store) Remove(nid string) error {
 	s.locker.Lock()
 	defer s.locker.Unlock()
 	return s.DB.Delete([]byte(nid))
 }
+
+//Start start store
 func (s *Store) Start() error {
 	return s.DB.Start()
 }
+
+//Stop stop store
 func (s *Store) Stop() error {
 	return s.DB.Stop()
 }
 
+//New create embedded store
 func New() *Store {
 	return &Store{}
 }

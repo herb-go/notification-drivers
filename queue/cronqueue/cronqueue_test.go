@@ -1,4 +1,4 @@
-package cronqueue
+package cronqueue_test
 
 import (
 	"io/ioutil"
@@ -11,6 +11,7 @@ import (
 	"github.com/herb-go/herbdata-drivers/kvdb-drivers/leveldb"
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification-drivers/queue/cronqueue"
 	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedstore"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
@@ -87,18 +88,23 @@ func listen(c <-chan *notificationqueue.Execution) {
 	}()
 }
 
-func newTestQueue() *Queue {
-	q := New()
-	p := &PlainRetry{"15s", "12h"}
-	r, err := p.CreateRetryHandler()
+func newTestQueue() *cronqueue.Queue {
+	q := cronqueue.New()
+	q.Interval = time.Second
+	pr := &cronqueue.PlainRetry{"15s", "12h"}
+	r, err := pr.CreateRetryHandler()
 	if err != nil {
 		panic(err)
 	}
-	q.Recover = testOnError
-	q.Interval = time.Second
-	q.OnDeliverTimeout = testOnTimeout
-	q.OnRetryTooMany = testRetryTooMany
-	q.IDGenerator = idgen
+	n := notificationqueue.NewNotifier()
+	n.Recover = testOnError
+	n.OnDeliverTimeout = testOnTimeout
+	n.OnRetryTooMany = testRetryTooMany
+	n.IDGenerator = idgen
+	err = q.AttachTo(n)
+	if err != nil {
+		panic(err)
+	}
 	q.RetryHandler = r
 	q.Store = newTestStore()
 	return q
@@ -108,6 +114,18 @@ func TestCronqueue(t *testing.T) {
 	q := newTestQueue()
 	q.Interval = time.Hour
 	defer clean()
+	p := notificationqueue.NewPublisher()
+	p.IDGenerator = idgen
+	err := q.AttachTo(p.Notifier)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		err = q.Detach()
+		if err != nil {
+			panic(err)
+		}
+	}()
 	c, err := q.PopChan()
 	if err != nil {
 		panic(err)
@@ -178,7 +196,7 @@ func TestTimeout(t *testing.T) {
 func TestRetryTooMany(t *testing.T) {
 	initTest()
 	q := newTestQueue()
-	p := &PlainRetry{"500ms", "500ms", "500ms"}
+	p := &cronqueue.PlainRetry{"500ms", "500ms", "500ms"}
 	r, err := p.CreateRetryHandler()
 	if err != nil {
 		panic(err)

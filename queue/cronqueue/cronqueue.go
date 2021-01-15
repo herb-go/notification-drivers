@@ -7,10 +7,16 @@ import (
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
+//DefaultInterval default queue interval
 var DefaultInterval = time.Minute
+
+//DefaultExecuteCount default execute count
 var DefaultExecuteCount = 10
+
+//DefaultTimeout default push timeout
 var DefaultTimeout = time.Minute
 
+//Queue queue struct
 type Queue struct {
 	Store            Store
 	Timeout          time.Duration
@@ -25,10 +31,12 @@ type Queue struct {
 	RetryHandler     RetryHandler
 }
 
+//PopChan return execution chan
 func (q *Queue) PopChan() (<-chan *notificationqueue.Execution, error) {
 	return q.pipe, nil
 }
 
+//NewExecution create new execution with given notification
 func (q *Queue) NewExecution(n *notification.Notification) (*notificationqueue.Execution, error) {
 	var err error
 	eid, err := q.IDGenerator()
@@ -49,6 +57,8 @@ func (q *Queue) pushExecution(e *notificationqueue.Execution) {
 		go q.OnDeliverTimeout(e)
 	}
 }
+
+//Push push notification to queue
 func (q *Queue) Push(n *notification.Notification) error {
 	e, err := q.NewExecution(n)
 	if err != nil {
@@ -67,6 +77,8 @@ func (q *Queue) Push(n *notification.Notification) error {
 	go q.pushExecution(e)
 	return nil
 }
+
+//Remove remove notification by given id
 func (q *Queue) Remove(nid string) error {
 	return q.Store.Remove(nid)
 }
@@ -125,16 +137,47 @@ func (q *Queue) cron() {
 		}
 	}
 }
+
+//Start start queue
 func (q *Queue) Start() error {
 	q.c = make(chan int)
 	go q.cron()
 	return q.Store.Start()
 }
+
+//Stop stop queue
 func (q *Queue) Stop() error {
 	close(q.c)
 	return q.Store.Stop()
 }
 
+//AttachTo attach queue to notifier
+func (q *Queue) AttachTo(n *notificationqueue.Notifier) error {
+	q.OnDeliverTimeout = func(e *notificationqueue.Execution) {
+		n.OnDeliverTimeout(e)
+	}
+	q.OnRetryTooMany = func(e *notificationqueue.Execution) {
+		n.OnRetryTooMany(e)
+	}
+	q.Recover = func() {
+		n.Recover()
+	}
+	q.IDGenerator = func() (string, error) {
+		return n.IDGenerator()
+	}
+	return nil
+}
+
+//Detach detach queue.
+func (q *Queue) Detach() error {
+	q.OnDeliverTimeout = notificationqueue.NopExecutionHandler
+	q.OnRetryTooMany = notificationqueue.NopExecutionHandler
+	q.Recover = notificationqueue.NopRecover
+	q.IDGenerator = notificationqueue.NopIDGenerator
+	return nil
+}
+
+//New create new queue
 func New() *Queue {
 	return &Queue{
 		Interval:     DefaultInterval,
