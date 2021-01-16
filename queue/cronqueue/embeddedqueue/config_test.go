@@ -1,4 +1,4 @@
-package embeddedstore_test
+package embeddedqueue_test
 
 import (
 	"io/ioutil"
@@ -7,7 +7,7 @@ import (
 	"github.com/herb-go/herbdata-drivers/kvdb-drivers/leveldb"
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification-drivers/queue/cronqueue"
-	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedstore"
+	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedqueue"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
@@ -18,8 +18,8 @@ func TestConfig(t *testing.T) {
 		panic(err)
 	}
 	defer clean()
-	c := &embeddedstore.Config{
-		Store: kvdb.Config{
+	c := &embeddedqueue.Config{
+		Engine: kvdb.Config{
 			Driver: "leveldb",
 			Config: func(v interface{}) error {
 				v.(*leveldb.Config).Database = tmpdir
@@ -29,10 +29,10 @@ func TestConfig(t *testing.T) {
 		Queue: cronqueue.Config{},
 		Retry: &cronqueue.PlainRetry{"1s", "10s", "100s"},
 	}
-	d, err := notificationqueue.NewDirective(embeddedstore.DirectiveName, func(v interface{}) error {
-		v.(*embeddedstore.Config).Store = c.Store
-		v.(*embeddedstore.Config).Queue = c.Queue
-		v.(*embeddedstore.Config).Retry = c.Retry
+	d, err := notificationqueue.NewDirective(embeddedqueue.DirectiveName, func(v interface{}) error {
+		v.(*embeddedqueue.Config).Engine = c.Engine
+		v.(*embeddedqueue.Config).Queue = c.Queue
+		v.(*embeddedqueue.Config).Retry = c.Retry
 		return nil
 	})
 	if err != nil {
@@ -47,7 +47,7 @@ func TestConfig(t *testing.T) {
 	if !ok {
 		t.Fatal(ok)
 	}
-	if q.Store == nil {
+	if q.Engine == nil {
 		t.Fatal(q)
 	}
 }

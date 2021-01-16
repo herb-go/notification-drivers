@@ -18,7 +18,7 @@ var DefaultTimeout = time.Minute
 
 //Queue queue struct
 type Queue struct {
-	Store            Store
+	Engine           Engine
 	Timeout          time.Duration
 	Interval         time.Duration
 	ExecuteCount     int
@@ -70,7 +70,7 @@ func (q *Queue) Push(n *notification.Notification) error {
 		return err
 	}
 	if ok {
-		err = q.Store.Insert(e)
+		err = q.Engine.Insert(e)
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (q *Queue) Push(n *notification.Notification) error {
 
 //Remove remove notification by given id
 func (q *Queue) Remove(nid string) error {
-	return q.Store.Remove(nid)
+	return q.Engine.Remove(nid)
 }
 
 func (q *Queue) retry(e *notificationqueue.Execution) {
@@ -103,7 +103,7 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 		return
 	}
 	e.ExecutionID, err = q.IDGenerator()
-	err = q.Store.Replace(eid, e)
+	err = q.Engine.Replace(eid, e)
 
 	if err != nil {
 		panic(err)
@@ -116,7 +116,7 @@ func (q *Queue) execute() {
 	var err error
 	var list []*notificationqueue.Execution
 	for {
-		list, iter, err = q.Store.List(iter, q.ExecuteCount)
+		list, iter, err = q.Engine.List(iter, q.ExecuteCount)
 		if err != nil {
 			panic(err)
 		}
@@ -143,13 +143,13 @@ func (q *Queue) cron() {
 func (q *Queue) Start() error {
 	q.c = make(chan int)
 	go q.cron()
-	return q.Store.Start()
+	return q.Engine.Start()
 }
 
 //Stop stop queue
 func (q *Queue) Stop() error {
 	close(q.c)
-	return q.Store.Stop()
+	return q.Engine.Stop()
 }
 
 //AttachTo attach queue to notifier

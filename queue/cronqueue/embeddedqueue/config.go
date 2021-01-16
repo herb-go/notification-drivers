@@ -1,4 +1,4 @@
-package embeddedstore
+package embeddedqueue
 
 import (
 	"github.com/herb-go/herbdata/kvdb"
@@ -7,9 +7,9 @@ import (
 )
 
 type Config struct {
-	Store kvdb.Config
-	Queue cronqueue.Config
-	Retry *cronqueue.PlainRetry
+	Engine kvdb.Config
+	Queue  cronqueue.Config
+	Retry  *cronqueue.PlainRetry
 }
 
 var DirectiveName = "embeddedqueue"
@@ -20,7 +20,7 @@ func (c *Config) AppylToPublisher(p *notificationqueue.Publisher) error {
 		return err
 	}
 	db := kvdb.New()
-	err = c.Store.ApplyTo(db)
+	err = c.Engine.ApplyTo(db)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func (c *Config) AppylToPublisher(p *notificationqueue.Publisher) error {
 	if err != nil {
 		return err
 	}
-	q.Store = s
+	q.Engine = s
 	p.SetQueue(q)
 	return nil
 }

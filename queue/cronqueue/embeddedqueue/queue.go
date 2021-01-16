@@ -1,4 +1,4 @@
-package embeddedstore
+package embeddedqueue
 
 import (
 	"sync"
@@ -11,18 +11,18 @@ import (
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
-//Store embedded store
-type Store struct {
+//Engine embedded store
+type Engine struct {
 	locker sync.Mutex
 	DB     *kvdb.Database
 }
 
 //List list queued Execution form start
-func (s *Store) List(start string, count int) ([]*notificationqueue.Execution, string, error) {
-	s.locker.Lock()
-	defer s.locker.Unlock()
+func (e *Engine) List(start string, count int) ([]*notificationqueue.Execution, string, error) {
+	e.locker.Lock()
+	defer e.locker.Unlock()
 	iter := []byte(start)
-	data, iter, err := s.DB.Next(iter, count)
+	data, iter, err := e.DB.Next(iter, count)
 	if err != nil {
 		return nil, "", nil
 	}
@@ -39,66 +39,66 @@ func (s *Store) List(start string, count int) ([]*notificationqueue.Execution, s
 
 //Insert insert execution to queue.
 //Do nothing if notifiaction exsits
-func (s *Store) Insert(execution *notificationqueue.Execution) error {
-	s.locker.Lock()
-	defer s.locker.Unlock()
+func (e *Engine) Insert(execution *notificationqueue.Execution) error {
+	e.locker.Lock()
+	defer e.locker.Unlock()
 	bs, err := msgpack.Marshal(execution)
 	if err != nil {
 		return err
 	}
-	_, err = s.DB.Get([]byte(execution.Notification.ID))
+	_, err = e.DB.Get([]byte(execution.Notification.ID))
 	if err == nil {
 		return nil
 	}
 	if err != herbdata.ErrNotFound {
 		return err
 	}
-	return s.DB.Set([]byte(execution.Notification.ID), bs)
+	return e.DB.Set([]byte(execution.Notification.ID), bs)
 }
 
 //Replace exectution in queue with given eid.
 //Do nothing if eid not match.
-func (s *Store) Replace(eid string, new *notificationqueue.Execution) error {
-	s.locker.Lock()
-	defer s.locker.Unlock()
-	bs, err := s.DB.Get([]byte(new.Notification.ID))
+func (e *Engine) Replace(eid string, new *notificationqueue.Execution) error {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	bs, err := e.DB.Get([]byte(new.Notification.ID))
 	if err != nil {
 		return err
 	}
-	e := notificationqueue.NewExecution()
-	err = msgpack.Unmarshal(bs, e)
+	execution := notificationqueue.NewExecution()
+	err = msgpack.Unmarshal(bs, execution)
 	if err != nil {
 		return err
 	}
-	if e.ExecutionID != eid {
+	if execution.ExecutionID != eid {
 		return nil
 	}
 	bs, err = msgpack.Marshal(new)
 	if err != nil {
 		return err
 	}
-	return s.DB.Set([]byte(new.Notification.ID), bs)
+	return e.DB.Set([]byte(new.Notification.ID), bs)
 }
 
 //Remove notifcation with given nid form queue.
 //Do nothing if notificatio not found
-func (s *Store) Remove(nid string) error {
-	s.locker.Lock()
-	defer s.locker.Unlock()
-	return s.DB.Delete([]byte(nid))
+func (e *Engine) Remove(nid string) error {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	return e.DB.Delete([]byte(nid))
 }
 
 //Start start store
-func (s *Store) Start() error {
-	return s.DB.Start()
+func (e *Engine) Start() error {
+	return e.DB.Start()
 }
 
 //Stop stop store
-func (s *Store) Stop() error {
-	return s.DB.Stop()
+func (e *Engine) Stop() error {
+	return e.DB.Stop()
 }
 
 //New create embedded store
-func New() *Store {
-	return &Store{}
+func New() *Engine {
+	return &Engine{}
 }

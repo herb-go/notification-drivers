@@ -4,8 +4,8 @@ import (
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
-//Store queue store interface
-type Store interface {
+//Engine queue Engine interface
+type Engine interface {
 	//List list queued Execution form start
 	List(start string, count int) ([]*notificationqueue.Execution, string, error)
 	//Insert insert execution to queue.

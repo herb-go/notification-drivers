@@ -1,4 +1,4 @@
-package embeddedstore_test
+package embeddedqueue_test
 
 import (
 	"io/ioutil"
@@ -8,15 +8,15 @@ import (
 	"github.com/herb-go/herbdata-drivers/kvdb-drivers/leveldb"
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
-	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedstore"
+	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedqueue"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 var tmpdir string
 
-func newTestStore() *embeddedstore.Store {
+func newTestEngine() *embeddedqueue.Engine {
 	var err error
-	s := embeddedstore.New()
+	s := embeddedqueue.New()
 	tmpdir, err = ioutil.TempDir("", "")
 	if err != nil {
 		panic(err)
@@ -38,8 +38,8 @@ func clean() {
 		os.RemoveAll(tmpdir)
 	}
 }
-func TestStore(t *testing.T) {
-	s := newTestStore()
+func TestEngine(t *testing.T) {
+	s := newTestEngine()
 	defer clean()
 	err := s.Start()
 	if err != nil {

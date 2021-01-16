@@ -12,14 +12,14 @@ import (
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification-drivers/queue/cronqueue"
-	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedstore"
+	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedqueue"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
 var tmpdir string
 
-func newTestStore() *embeddedstore.Store {
-	s := embeddedstore.New()
+func newTestEngine() *embeddedqueue.Engine {
+	s := embeddedqueue.New()
 	tmpdir, err := ioutil.TempDir("", "")
 	if err != nil {
 		panic(err)
@@ -106,7 +106,7 @@ func newTestQueue() *cronqueue.Queue {
 		panic(err)
 	}
 	q.RetryHandler = r
-	q.Store = newTestStore()
+	q.Engine = newTestEngine()
 	return q
 }
 func TestCronqueue(t *testing.T) {

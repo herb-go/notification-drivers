@@ -1,4 +1,4 @@
-package embeddeddraftbox_test
+package embeddedstore_test
 
 import (
 	"io/ioutil"
@@ -10,11 +10,10 @@ import (
 	_ "github.com/herb-go/herbdata-drivers/kvdb-drivers/leveldb"
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
-	"github.com/herb-go/notification-drivers/draftbox/embeddeddraftbox"
-	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
+	"github.com/herb-go/notification-drivers/store/embeddedstore"
 )
 
-func TestDraftbox(t *testing.T) {
+func TestStore(t *testing.T) {
 	tmpdir, err := ioutil.TempDir("", "")
 	if err != nil {
 		panic(err)
@@ -25,7 +24,7 @@ func TestDraftbox(t *testing.T) {
 		}
 		os.RemoveAll(tmpdir)
 	}()
-	c := &embeddeddraftbox.Config{
+	c := &embeddedstore.Config{
 		Database: &kvdb.Config{
 			Driver: "leveldb",
 			Config: func(v interface{}) error {
@@ -35,7 +34,7 @@ func TestDraftbox(t *testing.T) {
 			},
 		},
 	}
-	d, err := c.CreateDraftbox()
+	d, err := c.CreateStore()
 	if err != nil {
 		panic(err)
 	}
@@ -49,18 +48,18 @@ func TestDraftbox(t *testing.T) {
 			panic(err)
 		}
 	}()
-	dbox := d.(*embeddeddraftbox.Draftbox)
-	if dbox.Limit != notificationqueue.DefaultDraftboxListLimit {
+	dbox := d.(*embeddedstore.Store)
+	if dbox.Limit != notification.DefaultStoreListLimit {
 		t.Fatal(dbox)
 	}
 	dbox.Limit = 0
 	supported, err := d.SupportedConditions()
-	if err != nil || strings.Join(supported, ",") != strings.Join(embeddeddraftbox.SupportedConditions, ",") {
+	if err != nil || strings.Join(supported, ",") != strings.Join(embeddedstore.SupportedConditions, ",") {
 		t.Fatal(supported, err)
 	}
 	n := notification.New()
 	n.ID = "1"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +69,7 @@ func TestDraftbox(t *testing.T) {
 	}
 	n = notification.New()
 	n.ID = "2"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		panic(err)
 	}
@@ -80,7 +79,7 @@ func TestDraftbox(t *testing.T) {
 	}
 	n = notification.New()
 	n.ID = "2"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		panic(err)
 	}
@@ -88,16 +87,16 @@ func TestDraftbox(t *testing.T) {
 	if err != nil || cont != 2 {
 		t.Fatal(cont, err)
 	}
-	conds := []*notificationqueue.Condition{&notificationqueue.Condition{Keyword: notificationqueue.ConditionNotificationID, Value: "1"}}
+	conds := []*notification.Condition{&notification.Condition{Keyword: notification.ConditionNotificationID, Value: "1"}}
 	cont, err = d.Count(conds)
 	if err != nil || cont != 1 {
 		t.Fatal(cont, err)
 	}
-	n, err = d.Eject("1")
+	n, err = d.Remove("1")
 	if err != nil || n == nil || n.ID != "1" {
 		t.Fatal(n, err)
 	}
-	n, err = d.Eject("2")
+	n, err = d.Remove("2")
 	if err != nil || n == nil || n.ID != "2" {
 		t.Fatal(n, err)
 	}
@@ -105,46 +104,46 @@ func TestDraftbox(t *testing.T) {
 	if err != nil || cont != 0 {
 		t.Fatal(cont, err)
 	}
-	n, err = d.Eject("2")
+	n, err = d.Remove("2")
 	if !notification.IsErrNotificationIDNotFound(err) {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "1"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "2"
 	n.Header.Set(notification.HeaderNameBatch, "batch")
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "3"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "4"
 	n.Header.Set(notification.HeaderNameBatch, "batch")
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "5"
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
 	n = notification.New()
 	n.ID = "6"
 	n.Header.Set(notification.HeaderNameBatch, "batch")
-	err = d.Draft(n)
+	err = d.Save(n)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -198,7 +197,7 @@ func TestDraftbox(t *testing.T) {
 		t.Fatal(result)
 	}
 
-	conds = []*notificationqueue.Condition{&notificationqueue.Condition{Keyword: notificationqueue.ConditionBatch, Value: "batch"}}
+	conds = []*notification.Condition{&notification.Condition{Keyword: notification.ConditionBatch, Value: "batch"}}
 	cont, err = d.Count(conds)
 	if err != nil || cont != 3 {
 		t.Fatal(cont, err)
@@ -248,39 +247,5 @@ func TestDraftbox(t *testing.T) {
 	}
 	if result[0].ID != "6" {
 		t.Fatal(result)
-	}
-}
-
-func TestDirective(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "")
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		if tmpdir == "" {
-			return
-		}
-		os.RemoveAll(tmpdir)
-	}()
-	dbconfig := &kvdb.Config{
-		Driver: "leveldb",
-		Config: func(v interface{}) error {
-			lc := v.(*leveldb.Config)
-			lc.Database = tmpdir
-			return nil
-		},
-	}
-	d, err := notificationqueue.NewDirective(embeddeddraftbox.DirectiveName, func(v interface{}) error {
-		v.(*embeddeddraftbox.Config).Database = dbconfig
-		return nil
-	})
-	if err != nil {
-		panic(err)
-	}
-	p := notificationqueue.NewPublisher()
-	d.AppylToPublisher(p)
-	_, ok := p.Draftbox.(*embeddeddraftbox.Draftbox)
-	if !ok {
-		t.Fatal(d)
 	}
 }
