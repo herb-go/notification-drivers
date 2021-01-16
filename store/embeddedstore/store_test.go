@@ -54,7 +54,7 @@ func TestStore(t *testing.T) {
 	}
 	dbox.Limit = 0
 	supported, err := d.SupportedConditions()
-	if err != nil || strings.Join(supported, ",") != strings.Join(embeddedstore.SupportedConditions, ",") {
+	if err != nil || strings.Join(supported, ",") != strings.Join(notification.PlainFilterSupportedConditions, ",") {
 		t.Fatal(supported, err)
 	}
 	n := notification.New()

@@ -2,7 +2,6 @@ package embeddedstore
 
 import (
 	"sync"
-	"time"
 
 	"github.com/herb-go/herbdata"
 
@@ -14,18 +13,6 @@ import (
 
 //RequiredKvdbFeatures required kvdb featuers
 var RequiredKvdbFeatures = kvdb.FeatureEmbedded | kvdb.FeatureStore | kvdb.FeatureNext | kvdb.FeaturePrev
-
-//SupportedConditions supported filter conditions
-var SupportedConditions = []string{
-	notification.ConditionBatch,
-	notification.ConditionNotificationID,
-	notification.ConditionDelivery,
-	notification.ConditionTarget,
-	notification.ConditionTopic,
-	notification.ConditionInContent,
-	notification.ConditionBeforeTimestamp,
-	notification.ConditionAfterTimestamp,
-}
 
 //Store draftbox struct
 type Store struct {
@@ -69,7 +56,7 @@ func (s *Store) List(condition []*notification.Condition, start string, asc bool
 	var data []*herbdata.KeyValue
 	var iterbs = []byte(start)
 	var ok bool
-	ts := time.Now().Unix()
+	ctx := notification.NewConditionContext()
 	limit := count
 	if limit <= 0 {
 		limit = notification.DefaultStoreListLimit
@@ -94,7 +81,7 @@ func (s *Store) List(condition []*notification.Condition, start string, asc bool
 			if err != nil {
 				return nil, "", err
 			}
-			ok, err = filter.FilterNotification(n, ts)
+			ok, err = filter.FilterNotification(n, ctx)
 			if err != nil {
 				return nil, "", err
 			}
@@ -120,7 +107,7 @@ func (s *Store) Count(condition []*notification.Condition) (int, error) {
 	var err error
 	var result int
 	var ok bool
-	ts := time.Now().Unix()
+	ctx := notification.NewConditionContext()
 	limit := s.Limit
 	if limit <= 0 {
 		limit = notification.DefaultStoreListLimit
@@ -141,7 +128,7 @@ func (s *Store) Count(condition []*notification.Condition) (int, error) {
 			if err != nil {
 				return 0, err
 			}
-			ok, err = filter.FilterNotification(n, ts)
+			ok, err = filter.FilterNotification(n, ctx)
 			if err != nil {
 				return 0, err
 			}
@@ -158,7 +145,7 @@ func (s *Store) Count(condition []*notification.Condition) (int, error) {
 
 //SupportedConditions return supported condition keyword list
 func (s *Store) SupportedConditions() ([]string, error) {
-	return SupportedConditions, nil
+	return notification.PlainFilterSupportedConditions, nil
 }
 
 //Remove remove notification by given id and return removed notification.
