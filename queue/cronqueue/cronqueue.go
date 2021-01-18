@@ -104,11 +104,10 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	}
 	e.ExecutionID, err = q.IDGenerator()
 	err = q.Engine.Replace(eid, e)
-
 	if err != nil {
 		panic(err)
 	}
-	go q.pushExecution(e)
+	q.pushExecution(e)
 }
 func (q *Queue) execute() {
 	defer q.Recover()
@@ -161,7 +160,10 @@ func (q *Queue) AttachTo(n *notificationqueue.Notifier) error {
 		n.OnRetryTooMany(e)
 	}
 	q.Recover = func() {
-		n.Recover()
+		defer n.Recover()
+		if r := recover(); r != nil {
+			panic(r)
+		}
 	}
 	q.IDGenerator = func() (string, error) {
 		return n.IDGenerator()
