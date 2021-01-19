@@ -105,6 +105,10 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 	e.ExecutionID, err = q.IDGenerator()
 	err = q.Engine.Replace(eid, e)
 	if err != nil {
+		//Check if notification has been concurrency sent .
+		if notification.IsErrNotificationIDNotFound(err) {
+			return
+		}
 		panic(err)
 	}
 	q.pushExecution(e)

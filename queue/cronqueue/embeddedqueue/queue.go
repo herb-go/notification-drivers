@@ -63,6 +63,9 @@ func (e *Engine) Replace(eid string, new *notificationqueue.Execution) error {
 	defer e.locker.Unlock()
 	bs, err := e.DB.Get([]byte(new.Notification.ID))
 	if err != nil {
+		if err == herbdata.ErrNotFound {
+			return nil
+		}
 		return err
 	}
 	execution := notificationqueue.NewExecution()
