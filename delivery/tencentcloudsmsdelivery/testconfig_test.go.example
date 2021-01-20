@@ -1,0 +1,24 @@
+package tencentcloudsmsdelivery
+
+import (
+	"github.com/herb-go/notification"
+	"github.com/herb-go/providers/tencent/tencentcloud"
+	"github.com/herb-go/providers/tencent/tencentcloud/tencentcloudsms"
+)
+
+var TestSMS = &tencentcloudsms.Sms{
+	SdkAppid: "$SdkAppid",
+	App: tencentcloud.App{
+		SecretID:  "$SecretID",
+		SecretKey: "$SecretKey",
+	},
+}
+
+func NewTestContent() notification.Content {
+	c := notification.NewContent()
+	c.Set("templateid", "$templateid")
+	c.Set("sign", "$sign")
+	c.Set("phonenumber", "$phonenumber,$phonenumber")
+	c.Set("templateparam", "$templateparam")
+	return c
+}
