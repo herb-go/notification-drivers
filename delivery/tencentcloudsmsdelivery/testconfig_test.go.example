@@ -8,7 +8,7 @@ import (
 
 var TestSMS = &tencentcloudsms.Sms{
 	SdkAppid: "$SdkAppid",
-	App: tencentcloud.App{
+	App: &tencentcloud.App{
 		SecretID:  "$SecretID",
 		SecretKey: "$SecretKey",
 	},
