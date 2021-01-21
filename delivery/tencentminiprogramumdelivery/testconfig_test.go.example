@@ -1,0 +1,20 @@
+package tencentminiprogramumdelivery
+
+import (
+	"github.com/herb-go/notification"
+	"github.com/herb-go/providers/tencent/tencentminiprogram"
+)
+
+var TestApp = &tencentminiprogram.App{
+	AppID:     "$AppID",
+	AppSecret: "$AppSecret",
+}
+
+func NewTestContent() notification.Content {
+	c := notification.NewContent()
+	c.Set("touser", "$touser")
+	c.Set("appid", "$appid")
+	c.Set("templateid", "$templateid")
+	c.Set("data", "{}")
+	return c
+}

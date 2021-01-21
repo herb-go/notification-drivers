@@ -1,21 +1,18 @@
-package wechattmdelivery
+package tencentminiprogramumdelivery
 
 import (
 	"encoding/json"
 	"net/url"
-	"strconv"
-
-	"github.com/herb-go/fetcher"
 
 	"github.com/herb-go/notification/notificationdelivery"
-	"github.com/herb-go/providers/tencent/wechatmp/templatemessage"
+	"github.com/herb-go/providers/tencent/tencentminiprogram"
+	"github.com/herb-go/providers/tencent/tencentminiprogram/tencentminiprogramum"
 
 	"github.com/herb-go/notification"
-	"github.com/herb-go/providers/tencent/wechatmp"
 )
 
 type Delivery struct {
-	App wechatmp.App
+	App *tencentminiprogram.App
 }
 
 //CheckInvalidContent check if given content invalid
@@ -25,50 +22,45 @@ func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error)
 	if len(invalids) > 0 {
 		return invalids, nil
 	}
-	data := c.Get(ContentNameData)
-	var result interface{}
-	err := json.Unmarshal([]byte(data), &result)
-	if err != nil {
-		return []string{ContentNameData}, nil
-	}
 	return []string{}, nil
 }
 
-func (d *Delivery) buildMsg(c notification.Content) *wechatmp.TemplateMessage {
-	msg := wechatmp.NewTemplateMessage()
-	msg.ToUser = c.Get(ContentNameToUser)
-	msg.TemplateID = c.Get(ContentNameTemplateID)
+func (d *Delivery) DeliveryType() string {
+	return DeliveryType
+}
+func (d *Delivery) buildMsg(c notification.Content) (*tencentminiprogramum.Message, error) {
+	m := tencentminiprogramum.NewMessage()
+	m.ToUser = c.Get(ContentNameToUser)
+	m.MpTemplateMsg.AppID = c.Get(ContentNameAppID)
+	m.MpTemplateMsg.TemplateID = c.Get(ContentNameTemplateID)
 	url := c.Get(ContentNameURL)
 	if url != "" {
-		msg.URL = &url
+		m.MpTemplateMsg.URL = &url
 	}
-	miniprogram := c.Get(ContentNameMiniProgram)
+	miniprogram := c.Get(ContentNameMiniprogram)
 	if miniprogram != "" {
-		msg.Miniprogram = &wechatmp.TemplateMessageMiniprogram{
-			AppID:    ContentNameMiniProgram,
+		m.MpTemplateMsg.Miniprogram = &tencentminiprogramum.TemplateMessageMiniprogram{
+			AppID:    miniprogram,
 			PagePath: c.Get(ContentNamePagePath),
 		}
 	}
-	msg.Data = json.RawMessage(c.Get(ContentNameData))
-	return msg
-}
-func (d *Delivery) DeliveryType() string {
-	return DeliveryType
+	m.MpTemplateMsg.Data = json.RawMessage(c.Get(ContentNameData))
+	return m, nil
 }
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {
 		return notificationdelivery.DeliveryStatusAbort, "", err
 	}
-	msg := d.buildMsg(c)
-	result, err := templatemessage.SendTemplateMessage(&d.App, msg)
+	msg, err := d.buildMsg(c)
 	if err != nil {
-		if fetcher.GetAPIErrCode(err) != "" {
-			return notificationdelivery.DeliveryStatusAbort, fetcher.GetAPIErrContent(err), nil
-		}
+		return notificationdelivery.DeliveryStatusAbort, "", err
+	}
+	err = tencentminiprogramum.Send(d.App, msg)
+	if err != nil {
 		return notificationdelivery.DeliveryStatusFail, "", err
 	}
-	return notificationdelivery.DeliveryStatusSuccess, strconv.FormatInt(result.MsgID, 10), nil
+	return notificationdelivery.DeliveryStatusSuccess, "", nil
 }
 
 func (d *Delivery) MustEscape(unescaped string) string {
@@ -76,7 +68,7 @@ func (d *Delivery) MustEscape(unescaped string) string {
 }
 
 type Config struct {
-	wechatmp.App
+	*tencentminiprogram.App
 }
 
 var Factory = func(loader func(interface{}) error) (notificationdelivery.DeliveryDriver, error) {
