@@ -1,4 +1,4 @@
-package tencentcloudsmsdelivery
+package aliyunsmsdelivery
 
 import (
 	"strings"
@@ -11,9 +11,8 @@ func NewTestDelivery() *Delivery {
 	dc := &notificationdelivery.Config{
 		DeliveryType: DeliveryType,
 		DeliveryConfig: func(v interface{}) error {
-			v.(*Config).Sms.SdkAppid = TestSMS.SdkAppid
-			v.(*Config).Sms.SecretID = TestSMS.SecretID
-			v.(*Config).Sms.SecretKey = TestSMS.SecretKey
+			v.(*Config).AccessKeyID = TestAccessKey.AccessKeyID
+			v.(*Config).AccessKeySecret = TestAccessKey.AccessKeySecret
 			return nil
 		},
 	}

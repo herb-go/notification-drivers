@@ -1,17 +1,18 @@
-package tencentcloudsmsdelivery
+package aliyunsmsdelivery
 
 import (
 	"html"
 	"strings"
 
 	"github.com/herb-go/notification/notificationdelivery"
-	"github.com/herb-go/providers/tencent/tencentcloud/tencentcloudsms"
+	"github.com/herb-go/providers/alibaba/aliyun"
+	"github.com/herb-go/providers/alibaba/aliyun/aliyunsms"
 
 	"github.com/herb-go/notification"
 )
 
 type Delivery struct {
-	Sms tencentcloudsms.Sms
+	*aliyun.AccessKey
 }
 
 //CheckInvalidContent check if given content invalid
@@ -27,29 +28,14 @@ func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error)
 func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
-func (d *Delivery) buildMsg(c notification.Content) (*tencentcloudsms.Message, error) {
-	m := tencentcloudsms.NewMessage()
-	m.TemplateID = c.Get(ContentNameTemplateID)
-	pn := c.Get(ContentNamePhoneNumber)
-	if pn != "" {
-		list := strings.Split(pn, ",")
-		m.PhoneNumber = make([]string, len(list))
-		for k := range list {
-			m.PhoneNumber[k] = d.Unescape(list[k])
-		}
-	}
-	tp := c.Get(ContentNameTemplateParam)
-	if tp != "" {
-		list := strings.Split(tp, ",")
-		m.TemplateParam = make([]string, len(list))
-		for k := range list {
-			m.TemplateParam[k] = d.Unescape(list[k])
-		}
-	}
-	m.Sign = c.Get(ContentNameSign)
-	m.SessionContext = c.Get(ContentNameSessionContext)
-	m.ExtendCode = c.Get(ContentNameExtendCode)
-	m.SenderID = c.Get(ContentNameSenderID)
+func (d *Delivery) buildMsg(c notification.Content) (*aliyunsms.Message, error) {
+	m := aliyunsms.NewMessage()
+	m.PhoneNumbers = c.Get(ContentNamePhoneNumbers)
+	m.SignName = c.Get(ContentNameSignName)
+	m.TemplateCode = c.Get(ContentNameTemplateCode)
+	m.OutID = c.Get(ContentNameOutID)
+	m.TemplateParam = c.Get(ContentNameTemplateParam)
+	m.SmsUpExtendCode = c.Get(ContentNameSmsUpExtendCode)
 	return m, nil
 }
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
@@ -61,11 +47,11 @@ func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.Deliver
 	if err != nil {
 		return notificationdelivery.DeliveryStatusAbort, "", err
 	}
-	result, err := d.Sms.Send(msg)
+	result, err := aliyunsms.Send(d.AccessKey, msg)
 	if err != nil {
 		return notificationdelivery.DeliveryStatusFail, "", err
 	}
-	return notificationdelivery.DeliveryStatusSuccess, result.Response.RequestId, nil
+	return notificationdelivery.DeliveryStatusSuccess, result.BizId, nil
 }
 func (d *Delivery) Unescape(escaped string) string {
 	return html.UnescapeString(escaped)
@@ -81,17 +67,19 @@ func (d *Delivery) MustEscape(unescaped string) string {
 }
 
 type Config struct {
-	tencentcloudsms.Sms
+	*aliyun.AccessKey
 }
 
 var Factory = func(loader func(interface{}) error) (notificationdelivery.DeliveryDriver, error) {
-	c := &Config{}
+	c := &Config{
+		AccessKey: &aliyun.AccessKey{},
+	}
 	err := loader(c)
 	if err != nil {
 		return nil, err
 	}
 	d := &Delivery{
-		Sms: c.Sms,
+		AccessKey: c.AccessKey,
 	}
 	return d, nil
 }

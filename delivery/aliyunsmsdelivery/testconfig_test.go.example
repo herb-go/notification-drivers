@@ -1,0 +1,20 @@
+package aliyunsmsdelivery
+
+import (
+	"github.com/herb-go/notification"
+	"github.com/herb-go/providers/alibaba/aliyun"
+)
+
+var TestAccessKey = &aliyun.AccessKey{
+	AccessKeyID:     "$AccessKeyID",
+	AccessKeySecret: "$AccessKeySecret",
+}
+
+func NewTestContent() notification.Content {
+	c := notification.NewContent()
+	c.Set("PhoneNumbers", "$PhoneNumbers")
+	c.Set("SignName", "$SignName")
+	c.Set("TemplateCode", "$TemplateCode")
+	c.Set("TemplateParam", `$TemplateParam`)
+	return c
+}
