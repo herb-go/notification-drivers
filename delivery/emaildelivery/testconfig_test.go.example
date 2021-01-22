@@ -18,3 +18,6 @@ var TestTo=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
 var TestReplyTO=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
 var TestCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
 var TestBCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
+
+var Attachment1 = "https://rescdn.qqmail.com/bizmail/zh_CN/htmledition/images/logo/logo_biz_new/logo_biz_7_04748d4.png"
+var Attachment2 = "https://rescdn.qqmail.com/bizmail/zh_CN/htmledition/images/logo/logo_biz_new/logo_biz_7_04748d4.png"

@@ -1,16 +1,25 @@
 package emaildelivery
 
 import (
+	"bytes"
+	"encoding/json"
 	"mime"
 	"net/smtp"
 	"strconv"
 	"strings"
 
+	"github.com/herb-go/herbdata/datauri"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification/notificationdelivery"
 
 	"github.com/jordan-wright/email"
 )
+
+type Attachment struct {
+	Filename    string
+	DataURI     string
+	ContentType string
+}
 
 type SMTP struct {
 	Sender string
@@ -29,7 +38,7 @@ type SMTP struct {
 	StartTLS bool
 }
 
-func (s *SMTP) NewEmail(c notification.Content) *email.Email {
+func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 	msg := email.NewEmail()
 	msg.From = s.From
 	if msg.From == "" {
@@ -64,7 +73,26 @@ func (s *SMTP) NewEmail(c notification.Content) *email.Email {
 	if bcc != "" {
 		msg.Bcc = strings.Split(bcc, Separator)
 	}
-	return msg
+	attachmentsjson := c.Get(ContentNameAttachments)
+	if attachmentsjson != "" {
+		attachmentlist := []*Attachment{}
+		err := json.Unmarshal([]byte(attachmentsjson), &attachmentlist)
+		if err != nil {
+			return nil, err
+		}
+		for _, v := range attachmentlist {
+			data, err := datauri.Load(v.DataURI)
+			if err != nil {
+				return nil, err
+			}
+			_, err = msg.Attach(bytes.NewBuffer(data), v.Filename, v.ContentType)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return msg, nil
 }
 
 func (s *SMTP) Send(msg *email.Email) error {
@@ -82,11 +110,14 @@ func (d *Delivery) DeliveryType() string {
 	return DeliveryType
 }
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
-	err := notification.CheckRequiredContentError(c, RequeiredContent)
+	_, err := d.CheckInvalidContent(c)
 	if err != nil {
 		return notificationdelivery.DeliveryStatusAbort, "", err
 	}
-	msg := d.SMTP.NewEmail(c)
+	msg, err := d.SMTP.NewEmail(c)
+	if err != nil {
+		return notificationdelivery.DeliveryStatusFail, "", err
+	}
 	err = d.SMTP.Send(msg)
 	if err != nil {
 		return notificationdelivery.DeliveryStatusFail, "", err
@@ -102,7 +133,14 @@ func (d *Delivery) MustEscape(unescaped string) string {
 //CheckInvalidContent check if given content invalid
 //Return invalid fields and any error raised
 func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error) {
-	return notification.CheckRequiredContent(c, RequeiredContent), nil
+	result := notification.CheckRequiredContent(c, RequeiredContent)
+	if len(result) > 0 {
+		return result, nil
+	}
+	if d.SMTP.From == "" && c.Get(ContentNameFrom) == "" {
+		return []string{"from"}, nil
+	}
+	return nil, nil
 }
 
 type Config struct {

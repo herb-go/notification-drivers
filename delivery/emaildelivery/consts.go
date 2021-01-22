@@ -13,5 +13,5 @@ var ContentNameReplyTo = "replyto"
 var ContentNameTo = "to"
 var ContentNameCC = "cc"
 var ContentNameBCC = "bcc"
-
+var ContentNameAttachments = "attachments"
 var RequeiredContent = []string{ContentNameTo}

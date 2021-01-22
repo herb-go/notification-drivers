@@ -1,10 +1,13 @@
 package wechatworkdelivery
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/url"
+	"path"
 
 	"github.com/herb-go/fetcher"
+	"github.com/herb-go/herbdata/datauri"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/providers/tencent/wechatwork"
@@ -98,6 +101,29 @@ func (d *Delivery) initMessage(msg *wechatwork.Message, c notification.Content) 
 	}
 	msg.AgentID = d.Agent.AgentID
 }
+func (d *Delivery) getMediaID(c notification.Content) (string, error) {
+	mid := c.Get(ContentNameMediaID)
+	if mid != "" {
+		return mid, nil
+	}
+	uri := c.Get(ContentNameMediaDataURI)
+	if uri != "" {
+		filename := c.Get(ContentNameMediaFilename)
+		if filename == "" {
+			u, err := url.Parse(uri)
+			if err != nil {
+				return "", err
+			}
+			filename = path.Base(u.Path)
+		}
+		data, err := datauri.Load(uri)
+		if err != nil {
+			return "", err
+		}
+		return d.Agent.MediaUpload(wechatwork.MediaTypeImage, filename, bytes.NewBuffer(data))
+	}
+	return "", nil
+}
 func (d *Delivery) initTextMessage(msg *wechatwork.Message, c notification.Content) error {
 	msg.Text = &wechatwork.MessageText{
 		Content: c.Get(ContentNameContent),
@@ -105,20 +131,32 @@ func (d *Delivery) initTextMessage(msg *wechatwork.Message, c notification.Conte
 	return nil
 }
 func (d *Delivery) initImageMessage(msg *wechatwork.Message, c notification.Content) error {
+	mid, err := d.getMediaID(c)
+	if err != nil {
+		return err
+	}
 	msg.Image = &wechatwork.MessageMedia{
-		MediaID: c.Get(ContentNameMediaID),
+		MediaID: mid,
 	}
 	return nil
 }
 func (d *Delivery) initVoiceMessage(msg *wechatwork.Message, c notification.Content) error {
+	mid, err := d.getMediaID(c)
+	if err != nil {
+		return err
+	}
 	msg.Voice = &wechatwork.MessageMedia{
-		MediaID: c.Get(ContentNameMediaID),
+		MediaID: mid,
 	}
 	return nil
 }
 func (d *Delivery) initVideoMessage(msg *wechatwork.Message, c notification.Content) error {
+	mid, err := d.getMediaID(c)
+	if err != nil {
+		return err
+	}
 	msg.Video = &wechatwork.MessageVideo{
-		MediaID: c.Get(ContentNameMediaID),
+		MediaID: mid,
 	}
 	title := c.Get(ContentNameTitle)
 	if title != "" {
@@ -150,8 +188,12 @@ func (d *Delivery) initMPNewsMessage(msg *wechatwork.Message, c notification.Con
 	return nil
 }
 func (d *Delivery) initFileMessage(msg *wechatwork.Message, c notification.Content) error {
+	mid, err := d.getMediaID(c)
+	if err != nil {
+		return err
+	}
 	msg.File = &wechatwork.MessageMedia{
-		MediaID: c.Get(ContentNameMediaID),
+		MediaID: mid,
 	}
 	return nil
 }

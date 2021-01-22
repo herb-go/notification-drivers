@@ -1,6 +1,6 @@
 package aliyunsmsdelivery
 
-var DeliveryType = "tencentcloudsms"
+var DeliveryType = "aliyunsms"
 
 var ContentNamePhoneNumbers = "phonenumbers"
 var ContentNameSignName = "signname"

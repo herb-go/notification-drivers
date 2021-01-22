@@ -1,6 +1,7 @@
 package emaildelivery
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/herb-go/notification"
@@ -47,6 +48,23 @@ func TestDelivery(t *testing.T) {
 	c.Set(ContentNameSubject, " test subject 😅")
 	c.Set(ContentNameText, "text body")
 	c.Set(ContentNameHTML, "<p><b>html</b> body</p>")
+	a := []*Attachment{
+		{
+			Filename:    "1.png",
+			DataURI:     Attachment1,
+			ContentType: "",
+		},
+		{
+			Filename:    "2.png",
+			DataURI:     Attachment2,
+			ContentType: "",
+		},
+	}
+	bs, err := json.Marshal(a)
+	if err != nil {
+		panic(err)
+	}
+	c.Set(ContentNameAttachments, string(bs))
 	status, receipt, err := d.Deliver(c)
 	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, receipt, err)

@@ -66,29 +66,40 @@ func TestImageMessage(t *testing.T) {
 		t.Fatal(status, err)
 	}
 }
-
-func TestVoiceMessage(t *testing.T) {
+func TestImageURIMessage(t *testing.T) {
 	d := NewTestDelivery()
 	c := notification.NewContent()
-	if TestAmrFile == "" {
-		t.Fatal()
-	}
-	result, err := ioutil.ReadFile(TestAmrFile)
-	if err != nil {
-		panic(err)
-	}
-	mediaid, err := d.Agent.MediaUpload(wechatwork.MediaTypeVoice, "test.mp3", bytes.NewBuffer(result))
-	if err != nil {
-		panic(err)
-	}
-	c.Set(ContentNameMsgType, wechatwork.MsgTypeVoice)
+	c.Set(ContentNameMsgType, wechatwork.MsgTypeImage)
 	c.Set(ContentNameToUser, TestRecipient)
-	c.Set(ContentNameMediaID, mediaid)
+	c.Set(ContentNameMediaDataURI, TestPictureURL)
 	status, receipt, err := d.Deliver(c)
 	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
 		t.Fatal(status, err)
 	}
 }
+
+// func TestVoiceMessage(t *testing.T) {
+// 	d := NewTestDelivery()
+// 	c := notification.NewContent()
+// 	if TestAmrFile == "" {
+// 		t.Fatal()
+// 	}
+// 	result, err := ioutil.ReadFile(TestAmrFile)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	mediaid, err := d.Agent.MediaUpload(wechatwork.MediaTypeVoice, "test.mp3", bytes.NewBuffer(result))
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	c.Set(ContentNameMsgType, wechatwork.MsgTypeVoice)
+// 	c.Set(ContentNameToUser, TestRecipient)
+// 	c.Set(ContentNameMediaID, mediaid)
+// 	status, receipt, err := d.Deliver(c)
+// 	if status != notificationdelivery.DeliveryStatusSuccess || err != nil || receipt != "" {
+// 		t.Fatal(status, err)
+// 	}
+// }
 
 func TestVideoMessage(t *testing.T) {
 	d := NewTestDelivery()

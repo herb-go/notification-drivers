@@ -45,6 +45,16 @@ func (d *Delivery) buildMsg(c notification.Content) (*tencentminiprogramum.Messa
 		}
 	}
 	m.MpTemplateMsg.Data = json.RawMessage(c.Get(ContentNameData))
+	weappTemplateID := c.Get(ContentNameWeappTemplateID)
+	if weappTemplateID != "" {
+		m.WeappTemplateMessage = &tencentminiprogramum.WeappTemplateMessage{
+			TemplateID:      weappTemplateID,
+			Page:            c.Get(ContentNameWeappPage),
+			FormID:          c.Get(ContentNameWeappFormID),
+			EmphasisKeyword: c.Get(ContentNameWeappEmphasisKeyword),
+			Data:            c.Get(ContentNameWeappData),
+		}
+	}
 	return m, nil
 }
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
