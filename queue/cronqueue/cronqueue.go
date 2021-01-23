@@ -27,8 +27,8 @@ type Queue struct {
 	pipe             chan *notificationqueue.Execution
 	Recover          func()
 	OnExecution      func(*notificationqueue.Execution)
-	OnDeliverTimeout func(*notificationqueue.Execution)
-	OnRetryTooMany   func(*notificationqueue.Execution)
+	onDeliverTimeout func(*notificationqueue.Execution)
+	onRetryTooMany   func(*notificationqueue.Execution)
 	RetryHandler     RetryHandler
 }
 
@@ -55,7 +55,7 @@ func (q *Queue) pushExecution(e *notificationqueue.Execution) {
 	select {
 	case q.pipe <- e:
 	case <-time.After(q.Timeout):
-		go q.OnDeliverTimeout(e)
+		go q.onDeliverTimeout(e)
 	}
 }
 
@@ -99,7 +99,7 @@ func (q *Queue) retry(e *notificationqueue.Execution) {
 		if err != nil {
 			panic(err)
 		}
-		q.OnRetryTooMany(e)
+		q.onRetryTooMany(e)
 		return
 	}
 	e.ExecutionID, err = q.IDGenerator()
@@ -157,11 +157,11 @@ func (q *Queue) Stop() error {
 
 //AttachTo attach queue to notifier
 func (q *Queue) AttachTo(n *notificationqueue.Notifier) error {
-	q.OnDeliverTimeout = func(e *notificationqueue.Execution) {
-		n.OnDeliverTimeout(e)
+	q.onDeliverTimeout = func(e *notificationqueue.Execution) {
+		n.HandleDeliverTimeout(e)
 	}
-	q.OnRetryTooMany = func(e *notificationqueue.Execution) {
-		n.OnRetryTooMany(e)
+	q.onRetryTooMany = func(e *notificationqueue.Execution) {
+		n.HandleRetryTooMany(e)
 	}
 	q.Recover = func() {
 		defer n.Recover()
@@ -180,8 +180,8 @@ func (q *Queue) AttachTo(n *notificationqueue.Notifier) error {
 
 //Detach detach queue.
 func (q *Queue) Detach() error {
-	q.OnDeliverTimeout = notificationqueue.NopExecutionHandler
-	q.OnRetryTooMany = notificationqueue.NopExecutionHandler
+	q.onDeliverTimeout = notificationqueue.NopExecutionHandler
+	q.onRetryTooMany = notificationqueue.NopExecutionHandler
 	q.Recover = notificationqueue.NopRecover
 	q.IDGenerator = notificationqueue.NopIDGenerator
 	return nil

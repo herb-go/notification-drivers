@@ -13,6 +13,7 @@ import (
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification-drivers/queue/cronqueue"
 	"github.com/herb-go/notification-drivers/queue/cronqueue/embeddedqueue"
+	"github.com/herb-go/notification/notificationdelivery"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
 )
 
@@ -51,14 +52,14 @@ func idgen() (string, error) {
 
 var errorlist = []error{}
 var executionlist []*notificationqueue.Execution
-var timeoutlist []*notificationqueue.Execution
-var retrytoomany []*notificationqueue.Execution
+var timeoutlist []*notificationqueue.Receipt
+var retrytoomany []*notificationqueue.Receipt
 
 func initTest() {
 	errorlist = []error{}
 	executionlist = []*notificationqueue.Execution{}
-	timeoutlist = []*notificationqueue.Execution{}
-	retrytoomany = []*notificationqueue.Execution{}
+	timeoutlist = []*notificationqueue.Receipt{}
+	retrytoomany = []*notificationqueue.Receipt{}
 }
 func testOnError() {
 	r := recover()
@@ -68,11 +69,11 @@ func testOnError() {
 	}
 }
 
-func testOnTimeout(e *notificationqueue.Execution) {
-	timeoutlist = append(timeoutlist, e)
+func testOnTimeout(r *notificationqueue.Receipt) {
+	timeoutlist = append(timeoutlist, r)
 }
-func testRetryTooMany(e *notificationqueue.Execution) {
-	retrytoomany = append(retrytoomany, e)
+func testRetryTooMany(r *notificationqueue.Receipt) {
+	retrytoomany = append(retrytoomany, r)
 }
 func listen(c <-chan *notificationqueue.Execution) {
 	go func() {
@@ -98,8 +99,13 @@ func newTestQueue() *cronqueue.Queue {
 	}
 	n := notificationqueue.NewNotifier()
 	n.Recover = testOnError
-	n.OnDeliverTimeout = testOnTimeout
-	n.OnRetryTooMany = testRetryTooMany
+	n.OnReceipt = func(r *notificationqueue.Receipt) {
+		if r.Status == notificationdelivery.DeliveryStatusTimeout {
+			testOnTimeout(r)
+		} else if r.Status == notificationdelivery.DeliveryStatusRetryTooMany {
+			testRetryTooMany(r)
+		}
+	}
 	n.IDGenerator = idgen
 	err = q.AttachTo(n)
 	if err != nil {
