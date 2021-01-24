@@ -21,7 +21,7 @@ type Store struct {
 	Limit  int
 }
 
-//New create new draft box
+//New create new Store
 func New() *Store {
 	return &Store{}
 }
