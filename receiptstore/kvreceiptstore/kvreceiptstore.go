@@ -2,12 +2,12 @@ package kvreceiptstore
 
 import (
 	"sync"
-	"time"
 
 	"github.com/herb-go/herbdata"
 	"github.com/herb-go/herbdata/kvdb"
 	"github.com/herb-go/notification"
 	"github.com/herb-go/notification/notificationdelivery/notificationqueue"
+	"github.com/herb-go/notification/notificationdelivery/notificationqueue/receiptstore"
 	"github.com/vmihailenco/msgpack"
 )
 
@@ -17,10 +17,10 @@ func New() *Store {
 }
 
 type Store struct {
-	locker               sync.Mutex
-	DB                   *kvdb.Database
-	DataRretentionPeriod time.Duration
-	Limit                int
+	locker            sync.Mutex
+	DB                *kvdb.Database
+	DataRetentionDays int
+	Limit             int
 }
 
 //Open open store and return any error if raised
@@ -60,7 +60,7 @@ func (s *Store) List(condition []*notification.Condition, start string, asc bool
 		limit = notification.DefaultStoreListLimit
 	}
 	filter := NewFilter()
-	err = ApplyToFilter(filter, condition)
+	err = receiptstore.ApplyToFilter(filter, condition)
 	if err != nil {
 		return nil, "", err
 	}
@@ -111,7 +111,7 @@ func (s *Store) Count(condition []*notification.Condition) (int, error) {
 		limit = notification.DefaultStoreListLimit
 	}
 	filter := NewFilter()
-	err = ApplyToFilter(filter, condition)
+	err = receiptstore.ApplyToFilter(filter, condition)
 	if err != nil {
 		return 0, err
 	}
@@ -146,12 +146,12 @@ func (s *Store) SupportedConditions() ([]string, error) {
 	return SupportedConditions, nil
 }
 
-//RetentionPeriod log retention period.
-func (s *Store) RetentionPeriod() (time.Duration, error) {
-	return s.DataRretentionPeriod, nil
+//RetentionDays log retention period in day.
+func (s *Store) RetentionDays() (int, error) {
+	return s.DataRetentionDays, nil
 }
 
-//Clear clear outdate log
-func (s *Store) Clear() error {
-	return nil
+//Remove remove receipt by given notification id and return removed receipt.
+func (s *Store) Remove(id string) (*notificationqueue.Receipt, error) {
+	return nil, nil
 }

@@ -58,17 +58,6 @@ func (f *Filter) ApplyCondition(cond *notification.Condition) error {
 	return f.NotificationFilter.ApplyCondition((cond))
 }
 
-//ApplyToFilter apply condiitons to filter.
-func ApplyToFilter(f *Filter, conds []*notification.Condition) error {
-	for k := range conds {
-		err := f.ApplyCondition(conds[k])
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func init() {
 	SupportedConditions = make([]string, len(notification.PlainFilterSupportedConditions))
 	copy(SupportedConditions, notification.PlainFilterSupportedConditions)
