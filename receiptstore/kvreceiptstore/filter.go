@@ -61,5 +61,5 @@ func (f *Filter) ApplyCondition(cond *notification.Condition) error {
 func init() {
 	SupportedConditions = make([]string, len(notification.PlainFilterSupportedConditions))
 	copy(SupportedConditions, notification.PlainFilterSupportedConditions)
-	SupportedConditions = append(SupportedConditions, "stauts", "inmessage")
+	SupportedConditions = append(SupportedConditions, "status", "inmessage")
 }
