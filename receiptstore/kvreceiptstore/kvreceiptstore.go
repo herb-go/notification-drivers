@@ -153,5 +153,23 @@ func (s *Store) RetentionDays() (int, error) {
 
 //Remove remove receipt by given notification id and return removed receipt.
 func (s *Store) Remove(id string) (*notificationqueue.Receipt, error) {
-	return nil, nil
+	s.locker.Lock()
+	defer s.locker.Unlock()
+	bs, err := s.DB.Get([]byte(id))
+	if err != nil {
+		if err == herbdata.ErrNotFound {
+			return nil, notification.NewErrNotificationIDNotFound(id)
+		}
+		return nil, err
+	}
+	err = s.DB.Delete([]byte(id))
+	if err != nil {
+		return nil, err
+	}
+	r := &notificationqueue.Receipt{}
+	err = msgpack.Unmarshal(bs, r)
+	if err != nil {
+		return nil, err
+	}
+	return r, nil
 }

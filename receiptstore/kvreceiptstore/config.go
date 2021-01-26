@@ -10,8 +10,8 @@ type Config struct {
 	Database *kvdb.Config
 	//Limit count limit,defalut value is notificationquque.DefaultStoreListLimit
 	Limit int
-	//RretentionDays data rretention in days
-	RretentionDays int
+	//RetentionDays data rretention in days
+	RetentionDays int
 }
 
 //CreateStore create store
@@ -23,6 +23,6 @@ func (c *Config) CreateStore() (*Store, error) {
 		return nil, err
 	}
 	s.Limit = c.Limit
-	s.DataRetentionDays = c.RretentionDays
+	s.DataRetentionDays = c.RetentionDays
 	return s, nil
 }
