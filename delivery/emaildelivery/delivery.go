@@ -7,6 +7,9 @@ import (
 	"net/mail"
 	"net/smtp"
 	"strconv"
+	"strings"
+
+	"github.com/herb-go/herbtext-drivers/commonenvironment"
 
 	"github.com/herb-go/herbdata/datauri"
 	"github.com/herb-go/notification"
@@ -39,13 +42,15 @@ type SMTP struct {
 }
 
 func converntMailList(addrs string) ([]string, error) {
-	addrlist, err := mail.ParseAddressList(addrs)
-	if err != nil {
-		return nil, err
-	}
+
+	addrlist := strings.Split(addrs, ",")
 	result := make([]string, len(addrlist))
 	for k := range addrlist {
-		result[k] = addrlist[k].String()
+		addr, err := mail.ParseAddress(commonenvironment.ConverterCommaUnescape(addrlist[k]))
+		if err != nil {
+			return nil, err
+		}
+		result[k] = addr.String()
 	}
 	return result, nil
 }
