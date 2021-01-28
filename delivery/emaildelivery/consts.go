@@ -2,8 +2,6 @@ package emaildelivery
 
 var DeliveryType = "email"
 
-var Separator = ","
-
 var ContentNameSender = "sender"
 var ContentNameFrom = "from"
 var ContentNameSubject = "subject"

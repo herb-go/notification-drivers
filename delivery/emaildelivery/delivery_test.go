@@ -8,10 +8,6 @@ import (
 	"github.com/herb-go/notification/notificationdelivery"
 )
 
-func newAddr(name string, mail string) string {
-	d := &Delivery{}
-	return d.MustEscape(name) + " <" + d.MustEscape(mail) + ">"
-}
 func NewTestDelivery() *Delivery {
 	c := &Config{}
 	c.SMTP.Host = TestHost

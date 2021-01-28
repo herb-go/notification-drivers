@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"mime"
+	"net/mail"
 	"net/smtp"
 	"strconv"
-	"strings"
 
 	"github.com/herb-go/herbdata/datauri"
 	"github.com/herb-go/notification"
@@ -38,7 +38,19 @@ type SMTP struct {
 	StartTLS bool
 }
 
+func converntMailList(addrs string) ([]string, error) {
+	addrlist, err := mail.ParseAddressList(addrs)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]string, len(addrlist))
+	for k := range addrlist {
+		result[k] = addrlist[k].String()
+	}
+	return result, nil
+}
 func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
+	var err error
 	msg := email.NewEmail()
 	msg.From = s.From
 	if msg.From == "" {
@@ -59,19 +71,32 @@ func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 	}
 	replyto := c.Get(ContentNameReplyTo)
 	if replyto != "" {
-		msg.ReplyTo = strings.Split(replyto, Separator)
+		msg.ReplyTo, err = converntMailList(replyto)
+		if err != nil {
+			return nil, err
+		}
 	}
 	to := c.Get(ContentNameTo)
 	if to != "" {
-		msg.To = strings.Split(to, Separator)
+		msg.To, err = converntMailList(to)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 	cc := c.Get(ContentNameCC)
 	if cc != "" {
-		msg.Cc = strings.Split(cc, Separator)
+		msg.Cc, err = converntMailList(cc)
+		if err != nil {
+			return nil, err
+		}
 	}
 	bcc := c.Get(ContentNameBCC)
 	if bcc != "" {
-		msg.Bcc = strings.Split(bcc, Separator)
+		msg.Bcc, err = converntMailList(bcc)
+		if err != nil {
+			return nil, err
+		}
 	}
 	attachmentsjson := c.Get(ContentNameAttachments)
 	if attachmentsjson != "" {

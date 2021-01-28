@@ -14,10 +14,10 @@ var TestUsername = ""
 
 var TestPassword = ""
 
-var TestTo=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
-var TestReplyTO=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
-var TestCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
-var TestBCC=strings.Join([]string{newAddr("name", "mail1"), "mail2"}, Separator)
+var TestTo = "mail<mail@example.com>,mail2@example.com"
+var TestReplyTO = "mail3@example.com,mail<mail1@example.com>"
+var TestCC = "name<mail1@example.com>,mail2@example.com"
+var TestBCC = "name<mail1@example.com>,mail2@example.com"
 
 var Attachment1 = "https://rescdn.qqmail.com/bizmail/zh_CN/htmledition/images/logo/logo_biz_new/logo_biz_7_04748d4.png"
 var Attachment2 = "https://rescdn.qqmail.com/bizmail/zh_CN/htmledition/images/logo/logo_biz_new/logo_biz_7_04748d4.png"
