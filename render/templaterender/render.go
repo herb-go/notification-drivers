@@ -24,8 +24,10 @@ type Renderer struct {
 	//Constants constatns will overwrite given values
 	Constants herbtext.Set
 	//Params render params
-	Params              *texttemplate.Params
-	TemplateSet         texttemplateset.TemplateSet
+	Params *texttemplate.Params
+	//TemplateSet template set.
+	TemplateSet texttemplateset.TemplateSet
+	//SupportedDirectives renderer supported directives.
 	SupportedDirectives []string
 }
 

@@ -16,15 +16,25 @@ import (
 
 //RendererConfig renderer config struct
 type RendererConfig struct {
-	Name         string
-	Description  string
-	Topic        string
+	//Name renderer name
+	Name string
+	//Description renderer description
+	Description string
+	//Topic notifitaction topc
+	Topic string
+	//TTL notifitcation ttl in seconds.
+	//Notification.SuggestedTTL will be used if ttl <=0.
 	TTLInSeconds int64
-	Delivery     string
-	Engine       string
-	Constants    map[string]string
-	Params       texttemplate.ParamDefinitions
-	Templates    map[string]string
+	//Delivery notifiacation delivery
+	Delivery string
+	//Engine text template engine name
+	Engine string
+	//Constants constatns will overwrite given values
+	Constants map[string]string
+	//Params render params
+	Params texttemplate.ParamDefinitions
+	//Templates template set.
+	Templates map[string]string
 }
 
 func (c *RendererConfig) createRenderer() (*Renderer, error) {
