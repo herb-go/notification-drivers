@@ -14,6 +14,7 @@ import (
 	"github.com/herb-go/notification/notificationrender"
 )
 
+//RendererConfig renderer config struct
 type RendererConfig struct {
 	Name         string
 	Description  string
@@ -26,6 +27,7 @@ type RendererConfig struct {
 	Templates    map[string]string
 }
 
+//CreateRenderer creater renderer
 func (c *RendererConfig) CreateRenderer() (notificationrender.Renderer, error) {
 	var err error
 	if c.Name == "" {
@@ -48,7 +50,15 @@ func (c *RendererConfig) CreateRenderer() (notificationrender.Renderer, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.TemplateSet, err = texttemplateset.ParseWithEngineName(ts, c.Engine, env)
+	eng, err := texttemplate.GetEngine(c.Engine)
+	if err != nil {
+		return nil, err
+	}
+	r.TemplateSet, err = texttemplateset.ParseWith(ts, eng, env)
+	if err != nil {
+		return nil, err
+	}
+	r.SupportedDirectives, err = eng.Supported(env)
 	if err != nil {
 		return nil, err
 	}

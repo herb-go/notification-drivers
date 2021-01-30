@@ -9,13 +9,21 @@ import (
 	"github.com/herb-go/notification"
 )
 
+//Renderer renderer struct
 type Renderer struct {
-	Name                string
-	Description         string
-	Topic               string
-	TTL                 time.Duration
-	Delivery            string
-	Constants           herbtext.Set
+	//Name renderer name
+	Name string
+	//Description renderer description
+	Description string
+	//Topic notifitaction topc
+	Topic string
+	//TTL notifitcation ttl
+	TTL time.Duration
+	//Delivery notifiacation delivery
+	Delivery string
+	//Constants constatns will overwrite given values
+	Constants herbtext.Set
+	//Params render params
 	Params              *texttemplate.Params
 	TemplateSet         texttemplateset.TemplateSet
 	SupportedDirectives []string
