@@ -5,7 +5,7 @@ import (
 
 	"github.com/herb-go/herbtext"
 	"github.com/herb-go/herbtext/texttemplate"
-	"github.com/herb-go/herbtext/texttemplate/textviewset"
+	"github.com/herb-go/herbtext/texttemplate/texttemplateset"
 	"github.com/herb-go/notification"
 )
 
@@ -16,8 +16,8 @@ type Renderer struct {
 	TTL                 time.Duration
 	Delivery            string
 	Constants           herbtext.Set
-	Params              texttemplate.Params
-	Views               textviewset.Views
+	Params              *texttemplate.Params
+	TemplateSet         texttemplateset.TemplateSet
 	SupportedDirectives []string
 }
 
@@ -30,7 +30,7 @@ func (r *Renderer) Render(data map[string]string) (*notification.Notification, e
 	if err != nil {
 		return nil, err
 	}
-	content, err := r.Views.Render(ds)
+	content, err := r.TemplateSet.Render(ds)
 	if err != nil {
 		return nil, err
 	}
