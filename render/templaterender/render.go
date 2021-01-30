@@ -44,11 +44,7 @@ func (r *Renderer) Render(data map[string]string) (*notification.Notification, e
 	}
 	n := notification.New()
 	n.Header.Set(notification.HeaderNameTopic, r.Topic)
-	ed := r.TTL
-	if ed <= 0 {
-		ed = notification.SuggestedNotificationTTL
-	}
-	n.ExpiredTime = time.Now().Add(ed).Unix()
+	n.ExpiredTime = time.Now().Add(r.TTL).Unix()
 	n.Delivery = r.Delivery
 	herbtext.MergeSet(n.Content, content)
 	return n, nil

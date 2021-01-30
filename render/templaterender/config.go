@@ -40,7 +40,11 @@ func (c *RendererConfig) CreateRenderer() (notificationrender.Renderer, error) {
 	r.Name = c.Name
 	r.Description = c.Description
 	r.Topic = c.Topic
-	r.TTL = time.Second * time.Duration(c.TTLInSeconds)
+	if c.TTLInSeconds > 0 {
+		r.TTL = time.Second * time.Duration(c.TTLInSeconds)
+	} else {
+		r.TTL = notification.SuggestedNotificationTTL
+	}
 	r.Constants = notification.NewContent()
 	herbtext.MergeSet(r.Constants, herbtext.Map(c.Constants))
 	ts := notification.NewContent()
