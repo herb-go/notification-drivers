@@ -27,8 +27,7 @@ type RendererConfig struct {
 	Templates    map[string]string
 }
 
-//CreateRenderer creater renderer
-func (c *RendererConfig) CreateRenderer() (notificationrender.Renderer, error) {
+func (c *RendererConfig) createRenderer() (*Renderer, error) {
 	var err error
 	if c.Name == "" {
 		return nil, errors.New("templaterenderer: empty name")
@@ -67,4 +66,17 @@ func (c *RendererConfig) CreateRenderer() (notificationrender.Renderer, error) {
 		return nil, err
 	}
 	return r, nil
+}
+
+//CreateRenderCenter create render center with given renderer config list.
+func CreateRenderCenter(configs []*RendererConfig) (notificationrender.RenderCenter, error) {
+	c := notificationrender.NewRenderCenter()
+	for _, v := range configs {
+		r, err := v.createRenderer()
+		if err != nil {
+			return nil, err
+		}
+		c.Set(r.Name, r)
+	}
+	return c, nil
 }
