@@ -33,8 +33,10 @@ type RendererConfig struct {
 	Constants map[string]string
 	//Params render params
 	Params texttemplate.ParamDefinitions
-	//Templates template set.
-	Templates map[string]string
+	//HeaderTemplate content template set.
+	HeaderTemplate map[string]string
+	//ContentTemplate content template set.
+	ContentTemplate map[string]string
 }
 
 func (c *RendererConfig) createRenderer() (*Renderer, error) {
@@ -49,6 +51,7 @@ func (c *RendererConfig) createRenderer() (*Renderer, error) {
 	r.Name = c.Name
 	r.Description = c.Description
 	r.Topic = c.Topic
+	r.Delivery = c.Delivery
 	if c.TTLInSeconds > 0 {
 		r.TTL = time.Second * time.Duration(c.TTLInSeconds)
 	} else {
@@ -56,8 +59,11 @@ func (c *RendererConfig) createRenderer() (*Renderer, error) {
 	}
 	r.Constants = notification.NewContent()
 	herbtext.MergeSet(r.Constants, herbtext.Map(c.Constants))
-	ts := notification.NewContent()
-	herbtext.MergeSet(ts, herbtext.Map(c.Templates))
+	contenttemplate := notification.NewContent()
+	herbtext.MergeSet(contenttemplate, herbtext.Map(c.ContentTemplate))
+	headertemplate := notification.NewHeader()
+	herbtext.MergeSet(headertemplate, herbtext.Map(c.HeaderTemplate))
+
 	env := herbtext.DefaultEnvironment()
 	r.Params, err = c.Params.CreateParams(env)
 	if err != nil {
@@ -67,7 +73,11 @@ func (c *RendererConfig) createRenderer() (*Renderer, error) {
 	if err != nil {
 		return nil, err
 	}
-	r.TemplateSet, err = texttemplateset.ParseWith(ts, eng, env)
+	r.ContentTemplate, err = texttemplateset.ParseWith(contenttemplate, eng, env)
+	if err != nil {
+		return nil, err
+	}
+	r.HeaderTemplate, err = texttemplateset.ParseWith(headertemplate, eng, env)
 	if err != nil {
 		return nil, err
 	}

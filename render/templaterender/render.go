@@ -25,8 +25,10 @@ type Renderer struct {
 	Constants herbtext.Set
 	//Params render params
 	Params *texttemplate.Params
-	//TemplateSet template set.
-	TemplateSet texttemplateset.TemplateSet
+	//HeaderTemplate header template set.
+	HeaderTemplate texttemplateset.TemplateSet
+	//ContentTemplate content template set.
+	ContentTemplate texttemplateset.TemplateSet
 	//SupportedDirectives renderer supported directives.
 	SupportedDirectives []string
 }
@@ -40,13 +42,20 @@ func (r *Renderer) Render(data map[string]string) (*notification.Notification, e
 	if err != nil {
 		return nil, err
 	}
-	content, err := r.TemplateSet.Render(ds)
+	content, err := r.ContentTemplate.Render(ds)
+	if err != nil {
+		return nil, err
+	}
+	header, err := r.HeaderTemplate.Render(ds)
 	if err != nil {
 		return nil, err
 	}
 	n := notification.New()
+	herbtext.MergeSet(n.Header, header)
 	n.Header.Set(notification.HeaderNameTopic, r.Topic)
-	n.ExpiredTime = time.Now().Add(r.TTL).Unix()
+	now := time.Now()
+	n.CreatedTime = now.Unix()
+	n.ExpiredTime = now.Add(r.TTL).Unix()
 	n.Delivery = r.Delivery
 	herbtext.MergeSet(n.Content, content)
 	return n, nil
