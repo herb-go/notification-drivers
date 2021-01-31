@@ -13,8 +13,8 @@ import (
 	"github.com/herb-go/notification-drivers/render/templaterender"
 )
 
-func TestTemplate(t *testing.T) {
-	config := &templaterender.RendererConfig{
+func newTestConfig() *templaterender.RendererConfig {
+	return &templaterender.RendererConfig{
 		Name:         "test",
 		Description:  "test description",
 		Topic:        "testtopic",
@@ -68,6 +68,9 @@ func TestTemplate(t *testing.T) {
 			"testkey2":      "{{{testkey2}}}",
 		},
 	}
+}
+func TestTemplate(t *testing.T) {
+	config := newTestConfig()
 	rc, err := templaterender.CreateRenderCenter([]*templaterender.RendererConfig{config})
 	if err != nil {
 		t.Fatal(rc, err)
@@ -108,5 +111,32 @@ func TestTemplate(t *testing.T) {
 	}
 	if n.ExpiredTime-n.CreatedTime != 3600 {
 		t.Fatal(n.ExpiredTime - n.CreatedTime)
+	}
+}
+
+func TestConfig(t *testing.T) {
+	c := newTestConfig()
+	c.Name = ""
+	r, err := c.Create()
+	if err == nil || r != nil {
+		t.Fatal(err)
+	}
+	c = newTestConfig()
+	c.Delivery = ""
+	r, err = c.Create()
+	if err == nil || r != nil {
+		t.Fatal(err)
+	}
+	c = newTestConfig()
+	c.TTLInSeconds = 0
+	r, err = c.Create()
+	if err != nil || r.TTL != notification.SuggestedNotificationTTL {
+		t.Fatal(err)
+	}
+	c = newTestConfig()
+	c.TTLInSeconds = -1
+	r, err = c.Create()
+	if err != nil || r.TTL != notification.SuggestedNotificationTTL {
+		t.Fatal(err)
 	}
 }

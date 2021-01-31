@@ -39,7 +39,8 @@ type RendererConfig struct {
 	ContentTemplate map[string]string
 }
 
-func (c *RendererConfig) createRenderer() (*Renderer, error) {
+//Create create renderer
+func (c *RendererConfig) Create() (*Renderer, error) {
 	var err error
 	if c.Name == "" {
 		return nil, errors.New("templaterenderer: empty name")
@@ -92,7 +93,7 @@ func (c *RendererConfig) createRenderer() (*Renderer, error) {
 func CreateRenderCenter(configs []*RendererConfig) (notificationrender.RenderCenter, error) {
 	c := notificationrender.NewRenderCenter()
 	for _, v := range configs {
-		r, err := v.createRenderer()
+		r, err := v.Create()
 		if err != nil {
 			return nil, err
 		}
