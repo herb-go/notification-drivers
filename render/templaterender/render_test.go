@@ -71,7 +71,10 @@ func newTestConfig() *templaterender.RendererConfig {
 }
 func TestTemplate(t *testing.T) {
 	config := newTestConfig()
-	rc, err := templaterender.CreateRenderCenter([]*templaterender.RendererConfig{config})
+	templates := templaterender.Templates{
+		Templates: []*templaterender.RendererConfig{config},
+	}
+	rc, err := templates.CreateRenderCenter()
 	if err != nil {
 		t.Fatal(rc, err)
 	}

@@ -1,11 +1,11 @@
-[[Template]]
+[[Templates]]
 Name="testtemplate"
 Description="test dsec"
 Topic="test Topic"
 Disabled=false
 TTLInSeconds=3600
 Delivery="tencentcloudsms"
-Engine="handlerbars"
+Engine="handlebars"
 [[Template.Constants]]
 "a"="15"
 "b"="22"

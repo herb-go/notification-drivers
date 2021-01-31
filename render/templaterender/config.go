@@ -101,3 +101,13 @@ func CreateRenderCenter(configs []*RendererConfig) (notificationrender.RenderCen
 	}
 	return c, nil
 }
+
+//Templates templates config
+type Templates struct {
+	Templates []*RendererConfig
+}
+
+//CreateRenderCenter CreateRenderCenter create render center.
+func (t *Templates) CreateRenderCenter() (notificationrender.RenderCenter, error) {
+	return CreateRenderCenter(t.Templates)
+}
