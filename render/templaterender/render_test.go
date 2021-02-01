@@ -143,3 +143,28 @@ func TestConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestRequired(t *testing.T) {
+	c := newTestConfig()
+	c.Required = []string{"required"}
+	r, err := c.Create()
+	if err != nil || r == nil {
+		t.Fatal(err)
+	}
+	data := map[string]string{
+		"testheader": "testheadervalue",
+		"testtopic":  "testtopicvalue",
+		"constant":   "constantvalue",
+		"testkey":    "testkeyvalue",
+		"testkey2":   "testkey2value",
+	}
+	n, err := r.Render(data)
+	if err == nil || !notification.IsInvalidContentError(err) {
+		t.Fatal(n, err)
+	}
+	data["required"] = "required"
+	n, err = r.Render(data)
+	if err != nil || n == nil {
+		t.Fatal(n, err)
+	}
+}

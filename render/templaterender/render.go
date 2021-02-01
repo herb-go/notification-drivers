@@ -21,6 +21,8 @@ type Renderer struct {
 	TTL time.Duration
 	//Delivery notifiacation delivery
 	Delivery string
+	//Required fields
+	Required []string
 	//Constants constatns will overwrite given values
 	Constants herbtext.Set
 	//Params render params
@@ -34,9 +36,14 @@ type Renderer struct {
 }
 
 //Render render notification with given data
-func (r *Renderer) Render(data map[string]string) (*notification.Notification, error) {
+func (r *Renderer) Render(message notification.Message) (*notification.Notification, error) {
+	for k := range r.Required {
+		if message[r.Required[k]] == "" {
+			return nil, notification.NewRequiredContentError([]string{r.Required[k]})
+		}
+	}
 	c := notification.NewContent()
-	herbtext.MergeSet(c, herbtext.Map(data))
+	herbtext.MergeSet(c, message)
 	herbtext.MergeSet(c, r.Constants)
 	ds, err := r.Params.Load(c)
 	if err != nil {

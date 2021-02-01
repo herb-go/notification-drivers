@@ -57,13 +57,13 @@ func converntMailList(addrs string) ([]string, error) {
 func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 	var err error
 	msg := email.NewEmail()
-	msg.From = s.From
+	msg.From = c.Get(ContentNameFrom)
 	if msg.From == "" {
-		msg.From = c.Get(ContentNameFrom)
+		msg.From = s.From
 	}
-	msg.Sender = s.Sender
+	msg.Sender = c.Get(ContentNameSender)
 	if msg.Sender == "" {
-		msg.Sender = c.Get(ContentNameSender)
+		msg.Sender = s.Sender
 	}
 	msg.Subject = c.Get(ContentNameSubject)
 	text := c.Get(ContentNameText)

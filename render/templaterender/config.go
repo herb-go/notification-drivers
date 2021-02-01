@@ -22,6 +22,8 @@ type RendererConfig struct {
 	Description string
 	//Topic notifitaction topc
 	Topic string
+	//Required fields
+	Required []string
 	//TTL notifitcation ttl in seconds.
 	//Notification.SuggestedTTL will be used if ttl <=0.
 	TTLInSeconds int64
@@ -53,6 +55,7 @@ func (c *RendererConfig) Create() (*Renderer, error) {
 	r.Description = c.Description
 	r.Topic = c.Topic
 	r.Delivery = c.Delivery
+	r.Required = c.Required
 	if c.TTLInSeconds > 0 {
 		r.TTL = time.Second * time.Duration(c.TTLInSeconds)
 	} else {

@@ -6,27 +6,28 @@ Disabled=false
 TTLInSeconds=3600
 Delivery="tencentcloudsms"
 Engine="handlebars"
-[[Template.Constants]]
+Required=[]
+[Templates.Constants]
 "a"="15"
 "b"="22"
-[[Template.Params]]
+[[Templates.Params]]
 Source="userinfo"
 target="user"
 Parser="json"
 Description="用户信息"
 Example='''{"id":12345,"name":"abcd"}'''
-[[Template.Params]]
+[[Templates.Params]]
 Source="mobile"
 Description="手机号"
 Example="13500000000"
-[[Template.Params]]
+[[Templates.Params]]
 Source="usercode"
 Target="code"
 Description="验证码"
 Example="abcdefg"
-[Template.HeaderTemplate]
+[Templates.HeaderTemplate]
 "target"="{{{user.id}}}"
-[Template.ContentTemplate]
+[Templates.ContentTemplate]
 "templatecode"="123456"
 "phonenumbers"="+86{{{commaescape mobile}}}"
 "templatparams"="{{{commaescape code}}}"
