@@ -1,22 +1,21 @@
-package templaterender_test
+package templateview_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/herb-go/notification/notificationview"
+
 	_ "github.com/herb-go/herbtext-drivers/engine/handlebars"
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification-drivers/view/templateview"
 
 	_ "github.com/herb-go/herbtext-drivers/commonenvironment"
-
 	"github.com/herb-go/herbtext/texttemplate"
-	"github.com/herb-go/notification-drivers/render/templaterender"
 )
 
-func newTestConfig() *templaterender.RendererConfig {
-	return &templaterender.RendererConfig{
-		Name:         "test",
-		Description:  "test description",
+func newTestConfig() *templateview.Config {
+	return &templateview.Config{
 		Topic:        "testtopic",
 		TTLInSeconds: 3600,
 		Delivery:     "testdelivery",
@@ -71,20 +70,20 @@ func newTestConfig() *templaterender.RendererConfig {
 }
 func TestTemplate(t *testing.T) {
 	config := newTestConfig()
-	templates := templaterender.Templates{
-		Templates: []*templaterender.RendererConfig{config},
+	viewconfig := &notificationview.ViewConfig{
+		Type: templateview.DriverName,
+		Config: func(v interface{}) error {
+			c := v.(*templateview.Config)
+			*c = *config
+			return nil
+		},
 	}
-	rc, err := templates.CreateRenderCenter()
+	v, err := viewconfig.CreateView()
 	if err != nil {
-		t.Fatal(rc, err)
+		t.Fatal(v, err)
 	}
-	r, err := rc.Get("test")
-	if err != nil {
-		t.Fatal(r)
-	}
-	supported, err := r.Supported()
-	if err != nil || len(supported) == 0 {
-		t.Fatal(supported)
+	if len(v.(*templateview.View).SupportedDirectives) == 0 {
+		t.Fatal(v)
 	}
 	data := map[string]string{
 		"testheader": "testheadervalue",
@@ -93,7 +92,7 @@ func TestTemplate(t *testing.T) {
 		"testkey":    "testkeyvalue",
 		"testkey2":   "testkey2value",
 	}
-	n, err := r.Render(data)
+	n, err := v.Render(data)
 	if err != nil || n == nil {
 		t.Fatal(n, err)
 	}
@@ -119,27 +118,21 @@ func TestTemplate(t *testing.T) {
 
 func TestConfig(t *testing.T) {
 	c := newTestConfig()
-	c.Name = ""
-	r, err := c.Create()
-	if err == nil || r != nil {
-		t.Fatal(err)
-	}
-	c = newTestConfig()
 	c.Delivery = ""
-	r, err = c.Create()
-	if err == nil || r != nil {
+	v, err := c.Create()
+	if err == nil || v != nil {
 		t.Fatal(err)
 	}
 	c = newTestConfig()
 	c.TTLInSeconds = 0
-	r, err = c.Create()
-	if err != nil || r.TTL != notification.SuggestedNotificationTTL {
+	v, err = c.Create()
+	if err != nil || v.TTL != notification.SuggestedNotificationTTL {
 		t.Fatal(err)
 	}
 	c = newTestConfig()
 	c.TTLInSeconds = -1
-	r, err = c.Create()
-	if err != nil || r.TTL != notification.SuggestedNotificationTTL {
+	v, err = c.Create()
+	if err != nil || v.TTL != notification.SuggestedNotificationTTL {
 		t.Fatal(err)
 	}
 }
@@ -147,8 +140,8 @@ func TestConfig(t *testing.T) {
 func TestRequired(t *testing.T) {
 	c := newTestConfig()
 	c.Required = []string{"required"}
-	r, err := c.Create()
-	if err != nil || r == nil {
+	v, err := c.Create()
+	if err != nil || v == nil {
 		t.Fatal(err)
 	}
 	data := map[string]string{
@@ -158,12 +151,12 @@ func TestRequired(t *testing.T) {
 		"testkey":    "testkeyvalue",
 		"testkey2":   "testkey2value",
 	}
-	n, err := r.Render(data)
+	n, err := v.Render(data)
 	if err == nil || !notification.IsInvalidContentError(err) {
 		t.Fatal(n, err)
 	}
 	data["required"] = "required"
-	n, err = r.Render(data)
+	n, err = v.Render(data)
 	if err != nil || n == nil {
 		t.Fatal(n, err)
 	}

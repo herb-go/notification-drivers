@@ -1,4 +1,4 @@
-package templaterender
+package templateview
 
 import (
 	"time"
@@ -7,14 +7,14 @@ import (
 	"github.com/herb-go/herbtext/texttemplate"
 	"github.com/herb-go/herbtext/texttemplate/texttemplateset"
 	"github.com/herb-go/notification"
+	"github.com/herb-go/notification/notificationview"
 )
 
-//Renderer renderer struct
-type Renderer struct {
-	//Name renderer name
-	Name string
-	//Description renderer description
-	Description string
+//DriverName driver name
+const DriverName = "template"
+
+//View view struct
+type View struct {
 	//Topic notifitaction topc
 	Topic string
 	//TTL notifitcation ttl
@@ -36,39 +36,34 @@ type Renderer struct {
 }
 
 //Render render notification with given data
-func (r *Renderer) Render(message notification.Message) (*notification.Notification, error) {
-	for k := range r.Required {
-		if message[r.Required[k]] == "" {
-			return nil, notification.NewRequiredContentError([]string{r.Required[k]})
+func (v *View) Render(message notificationview.Message) (*notification.Notification, error) {
+	for k := range v.Required {
+		if message[v.Required[k]] == "" {
+			return nil, notification.NewRequiredContentError([]string{v.Required[k]})
 		}
 	}
-	c := notification.NewContent()
-	herbtext.MergeSet(c, message)
-	herbtext.MergeSet(c, r.Constants)
-	ds, err := r.Params.Load(c)
+	m := notificationview.NewMessage()
+	herbtext.MergeSet(m, message)
+	herbtext.MergeSet(m, v.Constants)
+	ds, err := v.Params.Load(m)
 	if err != nil {
 		return nil, err
 	}
-	content, err := r.ContentTemplate.Render(ds)
+	content, err := v.ContentTemplate.Render(ds)
 	if err != nil {
 		return nil, err
 	}
-	header, err := r.HeaderTemplate.Render(ds)
+	header, err := v.HeaderTemplate.Render(ds)
 	if err != nil {
 		return nil, err
 	}
 	n := notification.New()
 	herbtext.MergeSet(n.Header, header)
-	n.Header.Set(notification.HeaderNameTopic, r.Topic)
+	n.Header.Set(notification.HeaderNameTopic, v.Topic)
 	now := time.Now()
 	n.CreatedTime = now.Unix()
-	n.ExpiredTime = now.Add(r.TTL).Unix()
-	n.Delivery = r.Delivery
+	n.ExpiredTime = now.Add(v.TTL).Unix()
+	n.Delivery = v.Delivery
 	herbtext.MergeSet(n.Content, content)
 	return n, nil
-}
-
-//Supported return supported directives.
-func (r *Renderer) Supported() (directives []string, err error) {
-	return r.SupportedDirectives, nil
 }
