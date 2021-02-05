@@ -45,8 +45,11 @@ func converntMailList(addrs string) ([]string, error) {
 
 	addrlist := strings.Split(addrs, ",")
 	result := make([]string, len(addrlist))
-	for k := range addrlist {
-		addr, err := mail.ParseAddress(commonenvironment.ConverterCommaUnescape(addrlist[k]))
+	for k, v := range addrlist {
+		if v == "" {
+			continue
+		}
+		addr, err := mail.ParseAddress(commonenvironment.ConverterCommaUnescape(v))
 		if err != nil {
 			return nil, err
 		}
@@ -57,7 +60,12 @@ func converntMailList(addrs string) ([]string, error) {
 func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 	var err error
 	msg := email.NewEmail()
-	msg.From = c.Get(ContentNameFrom)
+	from := c.Get(ContentNameFrom)
+	fromlist, err := converntMailList(from)
+	if err != nil {
+		return nil, err
+	}
+	msg.From = fromlist[0]
 	if msg.From == "" {
 		msg.From = s.From
 	}
@@ -121,7 +129,6 @@ func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 			}
 		}
 	}
-
 	return msg, nil
 }
 
