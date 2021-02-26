@@ -1,5 +1,7 @@
 package emaildelivery
 
+import "github.com/herb-go/notification/notificationdelivery"
+
 var DeliveryType = "email"
 
 var ContentNameSender = "sender"
@@ -13,3 +15,61 @@ var ContentNameCC = "cc"
 var ContentNameBCC = "bcc"
 var ContentNameAttachments = "attachments"
 var RequeiredContent = []string{ContentNameTo}
+
+var Fields = []*notificationdelivery.Field{
+	{
+		Name:    ContentNameFrom,
+		Example: "NAME <mail@example.com>",
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameSubject,
+		Example: "EMAIL SUBJECT",
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameTo,
+		Example: `TONAME <to@example.com>,mail@example.com`,
+		Escape:  "commaescape",
+	},
+	{
+		Name:    ContentNameText,
+		Example: `THIS IS A TEXT EMAIL`,
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameHTML,
+		Example: `<p>THIS IS A <b>HTML</b> EMAIL</p>`,
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameAttachments,
+		Example: "[{\"Filename\":\"1.png\",\"DataURI\":\"https://URL\",\"ContentType\":\"image/png\"},{\"Filename\":\"2.png\",\"DataURI\":\"https://URL2\"}]",
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameReplyTo,
+		Example: `REPLYTONAME <replyto@example.com>`,
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameCC,
+		Example: `TONAME <to@example.com>,mail@example.com`,
+		Escape:  "commaescape",
+	},
+	{
+		Name:    ContentNameBCC,
+		Example: `TONAME <to@example.com>,mail@example.com`,
+		Escape:  "commaescape",
+	},
+	{
+		Name:    ContentNameFrom,
+		Example: "FROMNAME <from@example.com>",
+		Escape:  "",
+	},
+	{
+		Name:    ContentNameSender,
+		Example: "",
+		Escape:  "",
+	},
+}

@@ -77,6 +77,12 @@ func (d *Delivery) MustEscape(unescaped string) string {
 	return url.PathEscape(unescaped)
 }
 
+//ContentFields return content fields
+//Return invalid fields and any error raised
+func (d *Delivery) ContentFields() []*notificationdelivery.Field {
+	return Fields
+}
+
 type Config struct {
 	*tencentminiprogram.App
 }

@@ -12,6 +12,7 @@ import (
 type Delivery struct {
 	Preset          *fetcher.Preset
 	Type            string
+	Fields          []*notificationdelivery.Field
 	RequiredContent []string
 }
 
@@ -23,6 +24,12 @@ func (d *Delivery) DeliveryType() string {
 //MustEscape delivery escape helper
 func (d *Delivery) MustEscape(u string) string {
 	return u
+}
+
+//ContentFields return content fields
+//Return invalid fields and any error raised
+func (d *Delivery) ContentFields() []*notificationdelivery.Field {
+	return d.Fields
 }
 
 //CheckInvalidContent check if given content invalid
@@ -50,6 +57,7 @@ func (d *Delivery) Deliver(c notification.Content) (status notificationdelivery.
 type Config struct {
 	Server          fetcher.Server
 	RequiredContent []string
+	Fields          []*notificationdelivery.Field
 	DeliveryType    string
 }
 
@@ -67,6 +75,7 @@ var Factory = func(loader func(interface{}) error) (notificationdelivery.Deliver
 		Preset:          p.With(fetcher.Method("POST")),
 		RequiredContent: c.RequiredContent,
 		Type:            c.DeliveryType,
+		Fields:          c.Fields,
 	}
 	if d.Type == "" {
 		d.Type = DeliveryType

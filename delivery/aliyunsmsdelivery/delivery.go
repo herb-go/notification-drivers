@@ -38,6 +38,13 @@ func (d *Delivery) buildMsg(c notification.Content) (*aliyunsms.Message, error) 
 	m.SmsUpExtendCode = c.Get(ContentNameSmsUpExtendCode)
 	return m, nil
 }
+
+//ContentFields return content fields
+//Return invalid fields and any error raised
+func (d *Delivery) ContentFields() []*notificationdelivery.Field {
+	return Fields
+}
+
 func (d *Delivery) Deliver(c notification.Content) (notificationdelivery.DeliveryStatus, string, error) {
 	err := notification.CheckRequiredContentError(c, RequeiredContent)
 	if err != nil {

@@ -82,6 +82,12 @@ func (d *Delivery) MustEscape(unescaped string) string {
 	return url.PathEscape(unescaped)
 }
 
+//ContentFields return content fields
+//Return invalid fields and any error raised
+func (d *Delivery) ContentFields() []*notificationdelivery.Field {
+	return Fields
+}
+
 func (d *Delivery) initMessage(msg *wechatwork.Message, c notification.Content) {
 	touser := c.Get(ContentNameToUser)
 	if touser != "" {

@@ -167,6 +167,12 @@ func (d *Delivery) MustEscape(unescaped string) string {
 	return mime.BEncoding.Encode("utf-8", unescaped)
 }
 
+//ContentFields return content fields
+//Return invalid fields and any error raised
+func (d *Delivery) ContentFields() []*notificationdelivery.Field {
+	return Fields
+}
+
 //CheckInvalidContent check if given content invalid
 //Return invalid fields and any error raised
 func (d *Delivery) CheckInvalidContent(c notification.Content) ([]string, error) {
