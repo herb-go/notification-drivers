@@ -21,7 +21,7 @@ var Fields = []*notificationdelivery.Field{
 	},
 	{
 		Name:    ContentNameSignName,
-		Example: "COMAPNYSIGN",
+		Example: "COMPANYSIGN",
 		Escape:  "",
 	},
 	{

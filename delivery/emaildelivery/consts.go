@@ -34,18 +34,18 @@ var Fields = []*notificationdelivery.Field{
 	},
 	{
 		Name:    ContentNameText,
-		Example: `THIS IS A TEXT EMAIL`,
+		Example: "THIS IS A TEXT EMAIL\nLINE 2.",
 		Escape:  "",
 	},
 	{
 		Name:    ContentNameHTML,
-		Example: `<p>THIS IS A <b>HTML</b> EMAIL</p>`,
+		Example: "<p>\nTHIS IS A <b>HTML</b> EMAIL\n</p>",
 		Escape:  "",
 	},
 	{
 		Name:    ContentNameAttachments,
 		Example: "[{\"Filename\":\"1.png\",\"DataURI\":\"https://URL\",\"ContentType\":\"image/png\"},{\"Filename\":\"2.png\",\"DataURI\":\"https://URL2\"}]",
-		Escape:  "",
+		Escape:  "jsonescape",
 	},
 	{
 		Name:    ContentNameReplyTo,
@@ -54,18 +54,13 @@ var Fields = []*notificationdelivery.Field{
 	},
 	{
 		Name:    ContentNameCC,
-		Example: `TONAME <to@example.com>,mail@example.com`,
+		Example: `CCNAME <cc@example.com>,mail@example.com`,
 		Escape:  "commaescape",
 	},
 	{
 		Name:    ContentNameBCC,
-		Example: `TONAME <to@example.com>,mail@example.com`,
+		Example: `BCCNAME <bcc@example.com>,mail@example.com`,
 		Escape:  "commaescape",
-	},
-	{
-		Name:    ContentNameFrom,
-		Example: "FROMNAME <from@example.com>",
-		Escape:  "",
 	},
 	{
 		Name:    ContentNameSender,
