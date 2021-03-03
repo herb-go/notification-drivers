@@ -21,10 +21,6 @@ type View struct {
 	TTL time.Duration
 	//Delivery notifiacation delivery
 	Delivery string
-	//Required fields
-	Required []string
-	//Constants constatns will overwrite given values
-	Constants herbtext.Set
 	//Params render params
 	Params *texttemplate.Params
 	//HeaderTemplate header template set.
@@ -37,16 +33,13 @@ type View struct {
 
 //Render render notification with given data
 func (v *View) Render(message notificationview.Message) (*notification.Notification, error) {
-	for k := range v.Required {
-		if message[v.Required[k]] == "" {
-			return nil, notification.NewRequiredContentError([]string{v.Required[k]})
-		}
-	}
 	m := notificationview.NewMessage()
 	herbtext.MergeSet(m, message)
-	herbtext.MergeSet(m, v.Constants)
 	ds, err := v.Params.Load(m)
 	if err != nil {
+		if param := texttemplate.GetParamMissedErrorName(err); param != "" {
+			return nil, notification.NewRequiredContentError([]string{param})
+		}
 		return nil, err
 	}
 	content, err := v.ContentTemplate.Render(ds)

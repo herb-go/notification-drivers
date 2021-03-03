@@ -18,15 +18,11 @@ import (
 type Config struct {
 	//Topic notifitaction topc
 	Topic string
-	//Required fields
-	Required []string
 	//TTL notifitcation ttl in seconds.
 	//Notification.SuggestedTTL will be used if ttl <=0.
 	TTLInSeconds int64
 	//Delivery notifiacation delivery
 	Delivery string
-	//Constants constatns will overwrite given values
-	Constants map[string]string
 	//Engine text template engine name
 	Engine string
 	//Params render params
@@ -46,14 +42,11 @@ func (c *Config) Create() (*View, error) {
 	v := &View{}
 	v.Topic = c.Topic
 	v.Delivery = c.Delivery
-	v.Required = c.Required
 	if c.TTLInSeconds > 0 {
 		v.TTL = time.Second * time.Duration(c.TTLInSeconds)
 	} else {
 		v.TTL = notification.SuggestedNotificationTTL
 	}
-	v.Constants = notificationview.NewMessage()
-	herbtext.MergeSet(v.Constants, herbtext.Map(c.Constants))
 	contenttemplate := notification.NewContent()
 	herbtext.MergeSet(contenttemplate, herbtext.Map(c.ContentTemplate))
 	headertemplate := notification.NewHeader()

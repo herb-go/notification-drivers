@@ -20,10 +20,6 @@ func newTestConfig() *templateview.Config {
 		TTLInSeconds: 3600,
 		Delivery:     "testdelivery",
 		Engine:       "handlebars",
-		Constants: map[string]string{
-			"constant":  "constant",
-			"constant2": "constant2",
-		},
 		Params: texttemplate.ParamDefinitions{
 			{
 				ParamConfig: texttemplate.ParamConfig{
@@ -37,12 +33,14 @@ func newTestConfig() *templateview.Config {
 			},
 			{
 				ParamConfig: texttemplate.ParamConfig{
-					Source: "constant",
+					Source:   "constant",
+					Constant: "constant",
 				},
 			},
 			{
 				ParamConfig: texttemplate.ParamConfig{
-					Source: "constant2",
+					Source:   "constant2",
+					Constant: "constant2",
 				},
 			},
 			{
@@ -139,7 +137,12 @@ func TestConfig(t *testing.T) {
 
 func TestRequired(t *testing.T) {
 	c := newTestConfig()
-	c.Required = []string{"required"}
+	c.Params[0] = &texttemplate.ParamDefinition{
+		ParamConfig: texttemplate.ParamConfig{
+			Source:   "required",
+			Required: true,
+		},
+	}
 	v, err := c.Create()
 	if err != nil || v == nil {
 		t.Fatal(err)
@@ -152,7 +155,7 @@ func TestRequired(t *testing.T) {
 		"testkey2":   "testkey2value",
 	}
 	n, err := v.Render(data)
-	if err == nil || !notification.IsInvalidContentError(err) {
+	if err == nil || !notification.IsErrInvalidContent(err) {
 		t.Fatal(n, err)
 	}
 	data["required"] = "required"
