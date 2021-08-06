@@ -2,6 +2,7 @@ package emaildelivery
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"mime"
 	"net/mail"
@@ -37,8 +38,10 @@ type SMTP struct {
 	// Username email stmp user name
 	Username string
 	// Pasword email smtp password
-	Password string
-	StartTLS bool
+	Password           string
+	StartTLS           bool
+	SSL                bool
+	InsecureSkipVerify bool
 }
 
 func converntMailList(addrs string) ([]string, error) {
@@ -133,8 +136,18 @@ func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 }
 
 func (s *SMTP) Send(msg *email.Email) error {
+
+	c := &tls.Config{}
+	c.ServerName = s.Host
+
+	if s.InsecureSkipVerify {
+		c.InsecureSkipVerify = true
+	}
+	if s.SSL {
+		return msg.SendWithTLS(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host), c)
+	}
 	if s.StartTLS {
-		msg.SendWithStartTLS(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host), nil)
+		return msg.SendWithStartTLS(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host), c)
 	}
 	return msg.Send(s.Host+":"+strconv.Itoa(s.Port), smtp.PlainAuth(s.Identity, s.Username, s.Password, s.Host))
 }
