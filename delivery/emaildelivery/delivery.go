@@ -33,6 +33,8 @@ type SMTP struct {
 	Port int
 	// Identity user identity(user account) for stmp arddr
 	Identity string
+	//default email to address
+	To string
 	// email from address
 	From string
 	// Username email stmp user name
@@ -93,6 +95,9 @@ func (s *SMTP) NewEmail(c notification.Content) (*email.Email, error) {
 		}
 	}
 	to := c.Get(ContentNameTo)
+	if to == "" {
+		to = s.To
+	}
 	if to != "" {
 		msg.To, err = converntMailList(to)
 		if err != nil {
